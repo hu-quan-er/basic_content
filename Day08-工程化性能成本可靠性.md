@@ -1,0 +1,859 @@
+# Day 8 — 工程化：性能、成本、可靠性
+
+> 目标：掌握 Agent 在生产环境的延迟、成本、可靠性三角平衡的核心手段。
+
+---
+
+## 一、核心概念
+
+### 1.1 三角约束
+```
+        准确率
+         /\
+        /  \
+       /    \
+   延迟 ──── 成本
+```
+- 三者不可兼得，工程的本质是**在业务可接受范围内做权衡**
+- 例：要更准 → 用 Opus → 成本↑ 延迟↑
+- 例：要更快 → 模型分层 → 准确率可能↓
+
+### 1.2 延迟优化的杠杆
+
+#### Time to First Token（TTFT）
+- **流式输出**：边生成边显示，让用户感知延迟降低
+- **Prompt 优化**：input token 越多，TTFT 越长
+- **Prompt Caching**：缓存命中减少 prefill 时间
+- **更小模型**：参数少 → prefill 快
+
+#### Total Latency
+- **并行工具调用**：独立工具并发执行
+- **推测解码（Speculative Decoding）**：小模型预测，大模型校验
+- **Batch / Continuous Batching**：vLLM 等推理引擎
+- **缩短输出**：max_tokens 限制、prompt 引导简洁
+
+#### 网络延迟
+- 模型部署区域选靠近用户
+- 减少 hops（直连而非多层网关）
+
+### 1.3 成本优化的杠杆
+
+#### 模型层
+- **模型分层**：复杂决策用大模型，简单执行用小模型
+- **路由（Routing）**：基于 query 难度动态选择模型
+- **微调小模型**：用大模型教小模型，省成本
+- **开源自部署**：规模化后比 API 便宜
+
+#### Prompt 层
+- **Prompt Caching**：50~90% 折扣
+- **Few-shot 精简**：实验找最小有效集
+- **System Prompt 优化**：砍冗余
+- **历史压缩**：摘要长 history
+
+#### 调用层
+- **Semantic Cache**：相似 query 复用回答
+- **Batch API**：异步批处理 50% 折扣
+- **请求合并**：多个用户同问可合并
+
+#### 工具层
+- **工具结果压缩**：摘要后再喂 LLM
+- **避免无效调用**：好的工具描述减少误调
+
+### 1.4 可靠性的核心手段
+
+#### 重试
+- **临时性错误**：指数退避（exponential backoff）
+- **业务错误**：把错误反馈给 LLM 重试
+- **永久性错误**：立即放弃
+- **预算**：max_retries + total_timeout
+
+#### 超时
+- **单步超时**：单次 LLM / 工具调用上限
+- **总超时**：整个任务的墙钟时间
+- **流式超时**：首字超时 + 间隔超时
+
+#### 熔断
+- 上游错误率高 → 熔断该上游 N 秒
+- 避免雪崩
+- 工具：Hystrix 思想、resilience 库
+
+#### 限流
+- **按用户**：单用户 QPS / 日 token 上限
+- **按 API key**：租户隔离
+- **按模型**：总 RPM 不超过 API 配额
+- **算法**：Token Bucket、Sliding Window
+
+#### 降级
+- 主链路失败 → fallback 链路
+- 例：GPT-4 失败 → Claude 兜底
+- 例：复杂 RAG 失败 → 简单 FAQ
+- 例：Agent 失败 → 转人工
+
+#### 幂等
+- 重试不能引发副作用
+- 写操作必须有 idempotency key
+- 设计原则：相同 input + 相同 idem key = 相同 output
+
+#### 失败模式
+- **无限循环**：步数 / token / 时间上限
+- **Reward Hacking**：评估指标被钻空子
+- **级联错误**：早期错误指数放大
+
+### 1.5 多模型策略
+
+#### 模型路由
+- **静态规则**：根据 query 类型选模型
+- **学习路由**：用小模型判断 query 难度 → 选合适大模型
+- **A/B 路由**：流量分给不同模型对比
+
+#### 模型 ensemble
+- 多模型同时跑 → 投票 / 平均
+- 成本高，仅关键场景用
+
+#### Fallback Chain
+```
+Primary: GPT-4o
+  ↓ (失败)
+Fallback 1: Claude Sonnet
+  ↓ (失败)
+Fallback 2: Local Llama
+  ↓ (失败)
+Static response: "服务暂不可用"
+```
+
+### 1.6 Prompt Caching 工程实战
+
+#### 缓存边界设计
+```
+[可缓存前缀 — 几千 token 都行]
+  System Prompt
+  Tool Schemas
+  Few-shot Examples
+  Static RAG Context
+  --- 缓存断点 ---
+[动态部分 — 越短越好]
+  Dynamic History
+  Current Query
+```
+
+#### Anthropic 计费
+- 缓存写入：1.25x 正常单价
+- 缓存读取：0.1x 正常单价
+- 5 分钟 TTL（1 小时 beta）
+- 命中条件：前缀完全一致
+
+#### Agent 场景的特殊价值
+- 多轮中，前缀几乎不变
+- 命中率轻松 > 90%
+- 实际成本节省 60~80%
+
+### 1.7 流式输出
+
+#### 价值
+- TTFT 大幅降低（用户感知）
+- 可中断（用户改主意了就停）
+- 进度可见
+
+#### 实现
+- SSE（Server-Sent Events）
+- WebSocket
+- HTTP/2 streaming
+
+#### 复杂场景：Agent 流式
+- 不只是 token 流，还要流式 trace（"正在调用工具 X"）
+- LangGraph 的 `astream_events` 多级流式
+
+### 1.8 Continuous Batching（推理优化）
+- vLLM / TGI / TensorRT-LLM 的核心技术
+- 不同请求动态合并 batch
+- GPU 利用率 ↑ → 吞吐 ↑
+- 部署自家模型时关键
+
+### 1.9 推测解码（Speculative Decoding）
+- 小模型快速生成 N token 候选
+- 大模型验证（一次 forward 验证 N 个）
+- 接受率高时大幅加速
+- 适合：草稿生成、批量推理
+
+### 1.10 Anthropic / OpenAI 的工程模式
+
+#### Prompt Caching
+- 已讨论
+
+#### Extended Thinking / Reasoning
+- 模型用 token 思考，但只输出结论
+- 思考 token 也计费
+- 适合复杂推理，简单任务别开
+
+#### Batch API
+- 异步提交、24h 内返回
+- 50% 折扣
+- 适合：评估、数据生成、不要求实时的任务
+
+---
+
+## 二、主流实现要点
+
+### 2.1 推理引擎
+| 工具 | 特点 |
+|------|------|
+| **vLLM** | 开源，PagedAttention，主流选择 |
+| **TGI** | HuggingFace，易用 |
+| **TensorRT-LLM** | NVIDIA 官方，最快 |
+| **SGLang** | RadixAttention，KV cache 复用强 |
+| **llama.cpp** | CPU / 量化，边缘端 |
+
+### 2.2 模型路由工具
+- **RouteLLM**：开源，cost-quality tradeoff
+- **OpenRouter**：聚合多家 API，可配置路由
+- **LiteLLM**：统一 API + 简单路由
+
+### 2.3 Semantic Cache
+- **GPTCache**：开源
+- **Redis with vector index**：自建
+- 关键：相似度阈值（0.9+ 才复用）
+
+### 2.4 限流 / 熔断
+- **Token Bucket**：标准算法
+- **Redis Cell**：分布式限流
+- **resilience4j / Polly**：熔断库
+- **Cloudflare / AWS WAF**：边缘限流
+
+### 2.5 任务编排
+- **Celery / Temporal**：长任务编排
+- **Airflow / Prefect**：批处理
+- **LangGraph Checkpointer**：长 Agent 任务持久化
+
+---
+
+## 三、高频面试题（含答案）
+
+### Q1：Agent 调用一次要花 $0.5，怎么降到 $0.05？
+
+**答**：
+
+先分析 0.5 美元花在哪：
+
+**典型分布**：
+- LLM input token: 60%
+- LLM output token: 25%
+- 工具调用（外部 API）: 10%
+- 其他: 5%
+
+**10x 降本的组合拳**：
+
+**1. Prompt Caching（最大杠杆）— 节省 50~70%**
+- 长 system prompt + 工具 schema 全部进缓存
+- 每轮命中节省 90% input 单价
+- Agent 多轮场景这块收益最大
+
+**2. 模型分层 — 节省 30~50%**
+- Planner / Critic 用 Opus（决策准）
+- Executor 用 Haiku（执行快）
+- 摘要 / 解析用更小模型
+
+**3. 上下文压缩 — 节省 20~40%**
+- 工具结果摘要后回填（别全塞）
+- 历史超阈值自动摘要
+- 砍掉无用 few-shot
+
+**4. Semantic Cache — 节省 10~30%**
+- 相似 query 复用回答
+- 客服 / FAQ 场景命中率高
+
+**5. 工具结果优化 — 节省 10~20%**
+- 大 JSON 抽取关键字段
+- 截断 + 显式提示模型"完整结果在 X"
+
+**6. 早停 — 节省 5~15%**
+- 步数 / token 硬上限
+- Critic 评估"信息够了就停"
+
+**7. Batch API — 50% 折扣**
+- 适合非实时任务（评估、报告生成）
+
+**叠加效果**：理论可降 80~95%，实际 70~85% 是合理目标。
+
+**面试加分**：
+- 先**测量**再优化（profile 出每部分占比）
+- 列出 **可优化清单 + 预估收益**
+- 强调"不影响准确率前提下"
+
+---
+
+### Q2：用户希望首字延迟 < 500ms，怎么设计？
+
+**答**：
+
+**先分析延迟构成**：
+- 网络：50~200ms
+- Prefill：与 input length 强相关
+- 模型推理：与模型大小有关
+- 工具调用（如有）：100ms ~ 数秒
+
+**优化策略**：
+
+**1. 流式输出**
+- TTFT 是首字延迟，而非总响应延迟
+- 即使总长 5s，只要 500ms 内有第一个字，体验就好
+- **最重要的杠杆**
+
+**2. Prompt Caching**
+- Prefill 阶段直接读缓存，省几百 ms 到几秒
+- 长 prompt 场景效果显著
+
+**3. 选小 + 快模型**
+- 简单任务用 Haiku / GPT-4o-mini
+- 实测 TTFT（不是看 marketing 数字）
+- 边缘部署（vLLM + GPU 节点）
+
+**4. 减少 input token**
+- 砍 system prompt
+- few-shot 精简
+- 历史摘要
+
+**5. 预热 / Warm path**
+- 高频 query 命中 semantic cache
+- 直接返回，跳过 LLM
+
+**6. 边缘部署**
+- 模型部署在离用户近的区域
+- 多区域 + 智能路由
+
+**7. HTTP/2 + Keep-alive**
+- 减少 TCP 握手开销
+
+**8. 避免阻塞 chain**
+- 不要在首字前等其他东西（如先查数据库再调 LLM）
+- 异步 prefetch
+
+**架构层**：
+- 同步 prefetch user context
+- LLM 调用 → 立即开始流式
+- 第一个 chunk 到 → 立即转发给前端
+
+**测试方法**：
+- 端到端 TTFT 监控（P50 / P95 / P99）
+- 分解：网络 / prefill / 首 token 生成
+- 不同 prompt 长度的 TTFT 曲线
+
+---
+
+### Q3：Agent 偶尔卡死 5 分钟怎么治理？
+
+**答**：
+
+**根因分析**：
+
+可能原因：
+1. **无限循环**：ReAct 反复调同工具
+2. **工具超时**：外部 API 响应慢
+3. **LLM 慢**：推理时间长（reasoning 模型可能几分钟）
+4. **网络问题**：连接挂起
+5. **死锁**：工具间相互等待
+
+**多层治理**：
+
+**1. 多级超时**
+```
+TIMEOUTS = {
+    "single_tool_call": 30s,    # 单工具
+    "single_llm_call": 60s,     # 单 LLM 调用
+    "step_total": 90s,          # 一步内（含 LLM + 工具）
+    "task_total": 300s,         # 整个任务
+    "stream_first_byte": 5s,    # 流式首字
+    "stream_interval": 10s,     # 流式间隔
+}
+```
+
+**2. 步数上限**
+- `max_steps = 20`
+- 超过强制总结输出
+
+**3. Token 上限**
+- 单任务总 token 上限
+- 防 token 爆炸
+
+**4. 循环检测**
+- 检测同一 (tool, args) 连续调用 ≥ 3 次
+- 触发：注入指令"换种方式"或直接停
+
+**5. 心跳监控**
+- Agent 长时间无输出 → 告警
+- 自动 kill 卡死任务
+
+**6. 异步任务隔离**
+- 长任务后台跑，前端 polling 状态
+- 不阻塞 HTTP 连接
+
+**7. 熔断**
+- 检测某工具错误率 / 慢响应高
+- 临时熔断该工具，走 fallback
+
+**8. 优雅降级**
+- 超时 → 返回"已收集信息 + 抱歉超时"
+- 不要硬 fail
+
+**9. 可观测**
+- Trace 每步耗时
+- 离线分析：哪些场景容易卡
+
+**Prompt 层防御**：
+```
+You have at most 20 steps and 5 minutes.
+If you've been working >3 minutes without progress, summarize and stop.
+If a tool fails twice, try a different approach or give up.
+```
+
+**面试加分**：把这当成**SRE 问题**（不只是 prompt 问题），用经典分布式系统手段（超时、熔断、限流、降级）治理。
+
+---
+
+### Q4：怎么实现模型路由？
+
+**答**：
+
+**目标**：根据 query 难度选合适模型，平衡成本与质量。
+
+**3 种路由策略**：
+
+**1. 静态规则路由**
+```python
+def route(query):
+    if is_simple_faq(query): return "haiku"
+    if needs_code(query): return "claude-sonnet"
+    if needs_complex_reasoning(query): return "opus"
+    return "sonnet"  # default
+```
+- 简单可控
+- 缺点：规则难覆盖全场景
+
+**2. 分类器路由**
+- 训练小模型 / 用 embedding 分类 query 难度
+- 输出 → 选模型
+- 工具：RouteLLM、自训分类器
+- 平衡：分类器本身也有成本和延迟
+
+**3. Cascade（瀑布式）**
+```
+先用 Haiku 尝试
+   ↓
+判断置信度 / 自评估
+   ↓
+低置信 → 升级到 Sonnet → 仍低 → 升级到 Opus
+```
+- 简单 query 用便宜模型直出
+- 难 query 才用贵模型
+- 平均成本最优
+
+**4. Speculative Execution**
+- 同时跑大小模型
+- 小模型先出，大模型出后对比
+- 一致 → 用小模型结果
+- 不一致 → 用大模型
+- 极致体验，但 token 成本翻倍
+
+**实战架构**：
+
+```
+[Query]
+  ↓
+[Classifier]（小模型 / 规则）
+  ├─ 简单 → Haiku
+  ├─ 中等 → Sonnet
+  ├─ 困难 → Opus
+  └─ 模糊 → 让 Sonnet 先试，不确定再升级
+```
+
+**评估**：
+- 路由决策准确率（"该 X 但用了 Y" 的比例）
+- 整体质量 vs 单一大模型基线
+- 成本节省比例
+- 延迟分布
+
+**注意**：
+- 路由本身有 latency / cost，要算进去
+- 监控"路由失败 case"（用便宜模型质量差）
+- 定期更新规则 / 重训分类器
+
+---
+
+### Q5：Agent 高并发场景怎么设计限流？
+
+**答**：
+
+**多维限流**：
+
+**1. 按用户**
+- 每用户 RPM / 日 token 上限
+- 防滥用、防成本失控
+
+**2. 按 API key / 租户**
+- B 端场景，按租户隔离
+- 不同套餐不同配额
+
+**3. 按模型**
+- 总 RPM 不能超过 LLM provider 配额（OpenAI / Anthropic）
+- 否则触发 429
+
+**4. 按工具**
+- 外部 API 各有 rate limit
+- 协调全局调用频率
+
+**5. 按总流量**
+- 全局保护，防雪崩
+
+**实现**：
+
+**算法**：
+- **Token Bucket**：标准算法，平滑限流
+- **Leaky Bucket**：固定速率
+- **Sliding Window**：精确但状态多
+
+**存储**：
+- 单机：内存（Guava RateLimiter）
+- 分布式：Redis（INCR + EXPIRE / RedisCell）
+
+**响应**：
+- 429 Too Many Requests
+- Retry-After header
+- 客户端指数退避
+
+**优雅处理**：
+
+```python
+async def call_with_retry(req, max_retries=3):
+    for attempt in range(max_retries):
+        try:
+            return await llm.call(req)
+        except RateLimitError as e:
+            wait = min(2**attempt + jitter(), 60)
+            await asyncio.sleep(wait)
+    raise
+```
+
+**配额管理**：
+- 不同业务分配配额（先分配，再限流）
+- 紧急 burst：临时提升上限
+- 监控：utilization、reject rate
+
+**降级**：
+- 触发限流时不直接 fail
+- 降级到便宜模型 / 缓存结果 / 静态回答
+
+**面试加分**：
+- 区分"client-side limit"（保护自己）vs "server-side limit"（保护下游）
+- 提到 LLM provider 的 RPM / TPM 不同维度
+- 提到 Anthropic / OpenAI 都有 priority / sticky tier
+
+---
+
+### Q6：Prompt Caching 的实战注意点？
+
+**答**：
+
+**Anthropic Prompt Caching 关键约束**：
+
+**1. 缓存断点位置**
+- 标记 `cache_control` 的位置之前都缓存
+- 最多 4 个断点
+- 通常放在：system prompt 末尾、tool schemas 末尾、few-shot 末尾
+
+**2. 前缀必须完全一致**
+- 任何变化（多空格、变字段）→ 不命中
+- 变量必须放在缓存断点**之后**
+
+**3. 最小 token 门槛**
+- Sonnet: 1024 tokens
+- Haiku: 2048 tokens
+- 小于这个不会缓存
+
+**4. TTL**
+- 默认 5 分钟（每次命中刷新）
+- Beta 支持 1 小时
+- 高峰时段命中率高，闲时容易过期
+
+**5. 计费**
+- 写入：1.25x 单价（首次）
+- 读取：0.1x 单价（命中）
+- 不命中：1.0x（无优惠）
+
+**6. 缓存放置策略**
+
+```
+正确顺序：
+[system prompt]           ← 缓存
+[tool schemas]            ← 缓存
+[few-shot examples]       ← 缓存
+[static context]          ← 缓存
+[cache_control 断点]
+[动态内容]                  ← 不缓存
+[user query]              ← 不缓存
+```
+
+**7. 常见错误**
+
+❌ **变量放在前面**：
+```
+[user_id="abc"]           ← 每个用户不一样
+[system prompt]
+```
+→ 全部失效
+
+✅ **变量放最后**：
+```
+[system prompt]           ← 稳定
+[tool schemas]
+[cache_control]
+[user_id, query]
+```
+
+**8. Agent 场景的特殊价值**
+- 每轮调用：相同 system prompt + 相同 tools + 增量 history
+- 整个 Agent trace 缓存命中率 > 90%
+- 成本节省常 60~80%
+
+**9. 与流式的兼容**
+- Caching 与 streaming 完全兼容
+- 缓存命中时 TTFT 也降低
+
+**10. OpenAI 的差异**
+- OpenAI 自动缓存（无需显式声明）
+- 50% 折扣
+- 最小 1024 token
+
+**监控**：
+- `cache_creation_input_tokens` / `cache_read_input_tokens`
+- 计算命中率：read / (read + creation + normal)
+- 目标：> 80%
+
+---
+
+### Q7：Agent 调用外部 API 失败率高怎么办？
+
+**答**：
+
+**问题表现**：
+- 某些工具偶尔 timeout / 5xx
+- 失败传递给 LLM 后 reasoning 跑飞
+
+**多层处理**：
+
+**1. 网络层重试**
+- 临时错误（超时、5xx、网络）：指数退避重试
+- 配置：max_retries=3、initial_delay=1s、max_delay=10s
+- Jitter 防 thundering herd
+
+**2. 熔断**
+- 检测某 API 连续失败 → 熔断 N 秒
+- 期间直接返回 fallback / 错误
+- Half-open 状态试探恢复
+
+**3. 业务层处理**
+- 真业务错（404、422）：把结构化错误回填 LLM
+- LLM 自主调整重试
+- 防爆：同 args 失败 ≥ 2 次强制跳出
+
+**4. 超时设计**
+- 单工具超时 < 总任务超时
+- 网络超时 + 业务超时分层
+
+**5. 兜底数据**
+- 关键工具失败时，是否有 stale cache 可用？
+- 失败 → 标注 "数据可能过期" → 继续
+
+**6. Fallback 工具**
+- 同功能多家 provider（地图、搜索、天气）
+- 主失败切备
+
+**7. Graceful Degradation**
+- 工具失败 → 不强求完美回答
+- "我目前查不到 X，基于已知信息..."
+
+**8. 监控告警**
+- 工具粒度的成功率
+- 错误码分布（哪类错误最多）
+- 失败率突变告警
+
+**9. 客户端隔离**
+- 用 bulkhead（船舱隔离）：一个工具挂了不影响其他
+- 异步执行 + 独立线程池
+
+**架构示例**：
+```python
+class ToolExecutor:
+    def __init__(self):
+        self.circuit_breakers = {}
+        self.fallbacks = {}
+    
+    async def call(self, tool, args):
+        cb = self.circuit_breakers.get(tool.name)
+        if cb and cb.is_open():
+            return self.fallback(tool, args)
+        
+        try:
+            return await retry_with_backoff(
+                lambda: tool.execute(args),
+                max_retries=3,
+                timeout=30,
+            )
+        except Exception as e:
+            cb.record_failure()
+            return {"error": str(e), "code": classify_error(e)}
+```
+
+---
+
+## 四、场景设计题（含答案）
+
+### 场景 1：日均 100w 调用的客服 Agent
+
+**题目**：日均 100w 次调用的客服 Agent，QPS 平均 15、峰值 100。预算 / 延迟 / 成本怎么平衡？
+
+**答案**：
+
+**关键约束**：
+- 100w/日 → 平均 11.5 QPS，峰值 ~100 QPS
+- 用户期望响应 < 3s
+- 成本目标：估算每月 < $X（具体看预算）
+
+**架构设计**：
+
+**1. 分层处理（成本核心）**
+
+```
+[Query]
+  ↓
+[L1: Semantic Cache]  ← 命中率目标 30%+
+  ├─ Hit  → 直接返回（成本 ≈ 0，延迟 < 50ms）
+  └─ Miss → ↓
+[L2: FAQ 规则匹配]    ← 命中率目标 30%
+  ├─ Hit  → 模板回答（成本 ≈ 0）
+  └─ Miss → ↓
+[L3: 小模型 RAG]      ← Haiku / 4o-mini
+  ├─ Confident → 返回（成本低）
+  └─ Uncertain → ↓
+[L4: 大模型 Agent]    ← Sonnet / Opus
+  └─ 复杂工具调用 → 返回
+  ↓
+[L5: 转人工]          ← 真处理不了的
+```
+
+**2. 性能保障**
+
+- **Prompt Caching**：所有 LLM 调用都用，cache hit rate 目标 > 80%
+- **流式输出**：TTFT < 500ms
+- **并行工具**：独立查询并发
+- **超时**：单步 30s、总 60s
+
+**3. 可靠性**
+
+- **限流**：每用户 10 QPS、每秒总 200 QPS
+- **熔断**：单工具失败率 > 50% 触发
+- **Fallback**：LLM 失败 → 模板回答 → 转人工
+- **重试**：临时错误指数退避
+
+**4. 成本估算**（举例）
+
+| 层 | 占比 | 单次成本 | 占总成本 |
+|----|------|----------|----------|
+| L1 缓存 | 30% | $0.0001 | 1% |
+| L2 规则 | 30% | $0 | 0% |
+| L3 小模型 | 30% | $0.005 | 30% |
+| L4 大模型 | 9% | $0.05 | 50% |
+| L5 人工 | 1% | $1 | 20% |
+
+总: 100w × 加权平均 ≈ $X
+
+**5. 监控核心指标**
+
+- 业务：解决率、转人工率、CSAT
+- 工程：QPS、P95 延迟、错误率
+- 成本：每会话成本、cache hit rate、各层占比
+
+**6. 持续优化**
+
+- 失败 case → 数据飞轮
+- 每月 prompt 优化
+- 季度模型升级评估
+
+---
+
+### 场景 2：减少 Agent 长 trace 成本
+
+**题目**：一个长 trace Agent（30+ 步）每次 $2，老板要求降到 $0.5，怎么做？
+
+**答案**：
+
+**分析**：30 步 × 平均 5k input × $3/M tokens = $0.45，单纯 input。如果加 output 和 tool result，到 $2 合理。
+
+**降本组合**：
+
+**1. Prompt Caching（最大杠杆）— 估算节省 $1**
+- 30 步里 95% 内容是稳定前缀（system + tools + 早期 history）
+- 缓存命中 input 节省 90%
+- 估算 input 从 $1.5 降到 $0.3
+
+**2. 工具结果摘要 — 节省 $0.2**
+- 大返回（read_file、search 结果）摘要后回填
+- LLM 决策不需要全文，只需要关键信息
+
+**3. 阶段性 checkpoint summary — 节省 $0.15**
+- 每 10 步把早期 thought/observation 压缩为 summary
+- 减少累积长度
+
+**4. 模型分层 — 节省 $0.1**
+- 主决策用 Opus
+- 中间执行 / 摘要用 Haiku
+- 不是每一步都用最强模型
+
+**5. 早停 — 节省 $0.05**
+- Critic 评估"任务完成度"
+- 达到 90% 就 stop，不追求完美
+
+**6. Tool 输出限长**
+- 工具返回时 max_length 限制
+- 提前压缩
+
+**7. 减少冗余调用**
+- 文件读了的不要重读
+- 缓存层去重
+
+**预估结果**：
+- $2 → $0.5 是合理的（节省 75%）
+- 部分 case 可能更低
+
+**关键监控**：
+- 单 trace 成本分布
+- Cache hit rate
+- Step 数 / token 数趋势
+- 准确率不能掉
+
+**避坑**：
+- 别为了省钱降级到不可用
+- 改动前后做 A/B
+- 准确率回退 > 3% 立即回滚
+
+---
+
+## 五、自测清单
+
+- [ ] 三角约束（准确率 / 延迟 / 成本）
+- [ ] 延迟优化的 8 个杠杆
+- [ ] 成本优化的 4 层（模型 / Prompt / 调用 / 工具）
+- [ ] 可靠性 6 件套（重试 / 超时 / 熔断 / 限流 / 降级 / 幂等）
+- [ ] Prompt Caching 实战注意 10 点
+- [ ] 模型路由 3 种策略
+- [ ] 多级超时设计
+- [ ] 限流的 5 个维度
+
+---
+
+## 六、延伸阅读
+
+- Anthropic — *Prompt Caching Documentation*
+- OpenAI — *Prompt Caching Documentation*
+- Kwon et al. — *vLLM: Efficient Memory Management for LLM Serving*
+- *RouteLLM: Learning to Route LLMs*
+- Eugene Yan — *Patterns for Building LLM-based Systems*
+- Site Reliability Engineering（Google SRE 书）— resilience 思想

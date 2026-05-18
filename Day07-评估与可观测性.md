@@ -1,0 +1,730 @@
+# Day 7 — 评估与可观测性
+
+> 目标：建立 Agent 评估的系统观，掌握三层评估 + LLM-as-Judge + 数据飞轮。
+
+---
+
+## 一、核心概念
+
+### 1.1 为什么 Agent 评估这么难
+- **非确定性**：同 prompt 多次结果不同
+- **无标准答案**：开放式任务（写代码、写报告）
+- **轨迹复杂**：单次任务多步骤、多工具、多分支
+- **指标多维**：准确率、延迟、成本、安全性、UX
+- **数据稀缺**：高质量标注数据贵
+- **环境耦合**：依赖工具、数据状态，难复现
+
+### 1.2 评估的三个层级（核心框架）
+
+```
+┌─────────────────────────────────┐
+│ Level 1: 端到端（Outcome）        │
+│  任务完成质量、用户满意度          │
+├─────────────────────────────────┤
+│ Level 2: 单步（Step）             │
+│  工具调用正确性、推理质量、生成质量  │
+├─────────────────────────────────┤
+│ Level 3: 轨迹（Trajectory）       │
+│  路径合理性、效率、循环检测         │
+└─────────────────────────────────┘
+```
+
+#### Level 1：端到端评估
+- **任务成功率（Task Success Rate）**：核心北极星
+- 用户满意度（NPS、CSAT）
+- 完成时间 / 成本
+- 不同业务有不同 success 定义
+
+#### Level 2：单步评估
+- **工具调用准确率**：选对工具、参数对
+- **推理质量**：CoT 是否合理
+- **生成质量**：相关性、流畅性、faithfulness
+- **格式合规**：JSON schema 符合率
+
+#### Level 3：轨迹评估
+- **路径效率**：用了多少步、是否绕路
+- **错误恢复**：失败后能否纠正
+- **循环检测**：是否陷入死循环
+- **token 经济**：避免无效消耗
+
+### 1.3 评估方法
+
+#### 人工评估
+- **优势**：金标准，最贴近用户感知
+- **劣势**：贵、慢、不可扩展
+- **用法**：建小高质量集（100~1000 例）作为 gold set
+
+#### LLM-as-Judge
+- 用 LLM 当评估员
+- **优势**：可扩展、便宜、24/7
+- **劣势**：有偏差
+- **典型偏差**：
+  - **位置偏差**：偏好第一个出现的答案
+  - **冗长偏差**：偏好更长的答案
+  - **自我偏好**：偏好同模型生成的答案
+  - **风格偏差**：偏好特定风格
+
+#### 规则 / 单元测试
+- 适用：有明确正确性的任务（代码、数学、SQL）
+- 例：测试用例通过率、SQL 执行结果一致
+- **优势**：100% 客观
+
+#### 模型评估（专用模型）
+- **NLI 模型**：判断 entailment（Faithfulness）
+- **Reranker / 相似度模型**：semantic similarity
+- **域专用模型**：法律、医疗专门 evaluator
+
+### 1.4 LLM-as-Judge 最佳实践
+
+#### Pairwise vs Pointwise
+- **Pointwise**：直接打分（1-5）
+- **Pairwise**：A vs B 哪个好
+- **Pairwise 通常更可靠**（人类也擅长比较而非绝对评分）
+
+#### 减少偏差
+- **位置随机化**：A/B 顺序随机
+- **多模型投票**：多个 judge 模型，结果聚合
+- **校准**：少量人工标注作锚点，校准 LLM judge
+- **CoT 评估**：让 judge 先讲理由再打分
+
+#### Prompt 模板
+```
+You are evaluating an AI assistant's response.
+
+Question: {question}
+Response: {response}
+
+Evaluate on these dimensions:
+1. Correctness (0-5): Is the information accurate?
+2. Relevance (0-5): Does it answer the question?
+3. Helpfulness (0-5): Is it actionable?
+
+For each, give:
+- Score
+- Reasoning (1-2 sentences)
+- Specific examples from the response
+
+Output JSON.
+```
+
+### 1.5 RAG 专属评估指标（Ragas 框架）
+
+| 指标 | 含义 | 怎么算 |
+|------|------|--------|
+| **Faithfulness** | 答案是否 grounded 在 context | 拆解答案为 claims，每个 claim 查 context 是否支持 |
+| **Answer Relevance** | 答案是否切题 | 让 LLM 从答案反推问题，与原问题比 |
+| **Context Precision** | top-K context 中相关比例 | 排序质量评估 |
+| **Context Recall** | 真答案所需信息是否都召回 | 需要 ground truth |
+
+### 1.6 Agent 专属评估
+
+#### Tool Selection Accuracy
+- 标注："这种 query 该调哪个工具"
+- 跑 Agent，看选择是否一致
+
+#### Tool Argument Accuracy
+- 参数填得对吗？
+- 关键字段精确匹配
+
+#### Plan Quality
+- 计划是否覆盖必要子任务？
+- 顺序是否合理？
+
+#### Step Efficiency
+- 完成任务用了多少步？
+- 是否有冗余调用？
+
+### 1.7 离线 vs 在线评估
+
+#### 离线评估
+- 固定测试集，CI 中跑
+- 用于：回归、A/B
+- **关键**：测试集要代表性、覆盖边界
+
+#### 在线评估
+- 生产流量上评估
+- 指标：实时成功率、用户反馈、转化率
+- **关键**：埋点完整、采样合理
+
+### 1.8 数据飞轮（Data Flywheel）
+
+```
+[生产流量] → [Trace 入库] → [自动评估]
+                              ↓
+            [Failure 入失败池] → [人工 review]
+                              ↓
+            [优化 prompt / 工具 / 模型]
+                              ↓
+            [新版本上线] → [A/B 对比]
+                              ↓
+                          [转化为新基准]
+                              ↑
+                              └─────── 循环 ──────┘
+```
+
+**关键环节**：
+1. **Trace 全量记录**：每次调用都可追溯
+2. **自动评估**：LLM-judge + 规则
+3. **失败池**：按错误类型聚类
+4. **人工 review**：高频或高严重度的 case
+5. **优化**：prompt / 工具 / few-shot / 模型
+6. **A/B 上线**：新旧版本对比
+7. **回归**：失败 case 入测试集
+
+### 1.9 可观测性三要素（OpenTelemetry GenAI）
+
+| 要素 | 含义 |
+|------|------|
+| **Trace** | 端到端调用链：从 user request 到所有 LLM / tool 调用 |
+| **Metrics** | 聚合指标：latency、cost、token、error rate |
+| **Logs** | 详细日志：prompt、response、tool args/result |
+
+**关键字段**：
+- `genai.system`、`genai.model`
+- `gen_ai.prompt`、`gen_ai.completion`
+- `gen_ai.usage.input_tokens`、`gen_ai.usage.output_tokens`
+- `genai.tool.name`、`genai.tool.arguments`
+
+---
+
+## 二、主流工具
+
+### 2.1 Trace / 可观测平台
+| 工具 | 特点 |
+|------|------|
+| **LangSmith** | LangChain 出品，与 LangGraph 深度集成 |
+| **Langfuse** | 开源，可自托管 |
+| **Arize Phoenix** | 开源，与 OpenTelemetry 兼容好 |
+| **Helicone** | 开源，重点是 LLM 代理观测 |
+| **Weights & Biases** | ML 老牌，Weave 模块支持 LLM |
+| **OpenLLMetry** | OpenTelemetry 的 LLM 扩展 |
+
+### 2.2 评估框架
+| 工具 | 特点 |
+|------|------|
+| **Ragas** | RAG 评估专家 |
+| **TruLens** | 开源，多评估器组合 |
+| **DeepEval** | 单元测试风格，CI 友好 |
+| **LangSmith Eval** | 与 trace 一体 |
+| **Promptfoo** | YAML 配置，CLI 工具 |
+| **Inspect AI** | UK AI Safety Institute |
+
+### 2.3 测试集构建
+- **Synthetic Data**：用 LLM 生成（Ragas、Anthropic 的 testset generator）
+- **Real Traffic Sampling**：生产抽样 + 标注
+- **Adversarial**：故意构造难例
+- **Edge Cases**：边界 / 异常输入
+
+---
+
+## 三、高频面试题（含答案）
+
+### Q1：怎么评估一个没有标准答案的开放式 Agent？
+
+**答**：
+
+**核心思路**：多维度组合 + LLM-as-Judge + 人工锚点。
+
+**1. 拆解为可评估维度**
+开放任务"写一篇报告"，但可评：
+- **完整性**：是否覆盖必要部分
+- **准确性**：事实是否正确
+- **结构性**：逻辑是否清晰
+- **流畅性**：语言质量
+- **引用质量**：来源是否可靠
+
+每个维度独立打分，加权或单独看。
+
+**2. Pairwise 比较**
+- 比"绝对评分"更可靠
+- A/B test 新旧版本，看 win rate
+- 用法：让 judge 选"哪个更好"，胜率 > 55% 视为显著提升
+
+**3. 参考答案锚定**
+- 即使没标准答案，可以让专家写"参考答案"
+- 评估时让 LLM 比 "目标 vs 参考"
+- 不是完全匹配，而是 quality 对标
+
+**4. 用户反馈作 ground truth**
+- Thumbs up/down、点赞、复制次数
+- 长期看是最真实的信号
+- 短期数据稀疏，需要 LLM-judge 补充
+
+**5. 多 judge 投票**
+- 用 3 个不同模型当 judge
+- 多数同意才算可信
+- 减少单 judge 偏差
+
+**6. 人工抽检校准**
+- 每周抽 100 例做人工标注
+- 对比 LLM-judge 分数，看一致率
+- 一致率 < 80% → judge prompt 要优化
+
+**7. 业务指标兜底**
+- 哪怕评估难，最终看业务转化
+- 客服 Agent → 解决率、转人工率
+- Coding Agent → PR 合并率
+
+---
+
+### Q2：LLM-as-Judge 有哪些偏差？怎么校正？
+
+**答**：
+
+**6 大典型偏差**：
+
+**1. 位置偏差（Position Bias）**
+- 偏好第一个出现的答案
+- **校正**：A/B 顺序随机化，跑两次取平均
+
+**2. 冗长偏差（Verbosity Bias）**
+- 偏好更长的答案
+- **校正**：长度归一化、加入"简洁性"评估项
+
+**3. 自我偏好（Self-Preference Bias）**
+- GPT-4 当 judge 偏好 GPT 生成
+- **校正**：换不同家族的 judge，多 judge 投票
+
+**4. 风格偏差**
+- 偏好格式化输出（bullet points、headers）
+- **校正**：评估时关注内容，明确指令"忽略格式"
+
+**5. 锚定偏差**
+- 第一个分数影响后续
+- **校正**：独立评估每个维度
+
+**6. 友善偏差（Sycophancy）**
+- 倾向给高分
+- **校正**：明确给出"扣分"的标准，鼓励严格
+
+**通用校正策略**：
+
+1. **明确 rubric**：每个分数对应什么标准（不是模糊的"好/差"）
+2. **要求理由**：先理由后分数（CoT 评估）
+3. **Few-shot 校准**：给几个标注过的例子作锚点
+4. **多 judge 集成**：majority vote 或平均
+5. **人工锚点**：定期抽样人工评估校准
+6. **Pairwise 优于 pointwise**
+
+**评估你的 evaluator**：
+- 与人工标注的一致率（Cohen's kappa）
+- 一致率 > 0.7 是基本要求
+
+---
+
+### Q3：怎么评估 Agent 的轨迹（trajectory）？
+
+**答**：
+
+**端到端成功 ≠ 轨迹正确**：可能 lucky 完成；也可能虽然失败但路径合理。
+
+**轨迹评估维度**：
+
+**1. 工具选择正确性**
+- 每步用的工具是否合适
+- 评估：标注"该用什么工具" → 比对
+- 自动化：LLM-judge 看 trace 评估
+
+**2. 参数正确性**
+- 工具参数填得对吗
+- 关键字段（如 user_id、date）精确匹配
+
+**3. 步数效率**
+- 完成任务用了几步
+- vs 最优路径的偏离
+- 监控：平均步数趋势
+
+**4. 错误恢复能力**
+- 工具失败后是否合理调整
+- 是否被错误结果误导
+
+**5. 循环检测**
+- 是否反复调用同一工具
+- 检测：detect repeated (tool, args) pairs
+
+**6. 终止时机**
+- 信息够了就停了吗？还是过度调用？
+- 评估：让 judge 看 trace，标"何时该停"
+
+**实现**：
+
+```python
+def evaluate_trajectory(trace):
+    return {
+        "total_steps": len(trace.steps),
+        "redundant_calls": detect_duplicates(trace),
+        "tool_accuracy": llm_judge_tools(trace),
+        "completion_quality": judge_outcome(trace.final_output),
+        "efficiency_score": 1 - (trace.total_tokens / baseline_tokens),
+    }
+```
+
+**离线 vs 在线**：
+- 离线：固定测试集 + 多维 score
+- 在线：实时监控异常 trajectory（步数 > 上限、token > 上限）
+
+**面试加分**：提到**轨迹聚类**：把所有 trace 按工具序列聚类，分析高频路径 vs 异常路径。
+
+---
+
+### Q4：在线 Agent 怎么持续改进？（数据飞轮）
+
+**答**：
+
+**数据飞轮完整闭环**：
+
+**Phase 1：Trace 采集**
+- 每次调用全量 trace 入库
+- 关键字段：user_id、session_id、prompt、response、tools、cost、latency
+- 工具：LangSmith / Langfuse 自动埋点
+
+**Phase 2：自动评估**
+- LLM-judge 实时打分（采样以控成本）
+- 规则检测：错误码、超时、循环
+- 用户反馈接入：thumbs up/down
+
+**Phase 3：失败聚类**
+- 按错误类型聚类（k-means on embeddings of failed queries）
+- 高频失败 → 优先级最高
+- 工具：人工 review dashboard
+
+**Phase 4：根因分析**
+- 是 prompt 问题？工具描述？模型能力？数据问题？
+- 抽样 deep dive
+
+**Phase 5：优化**
+- Prompt 改写（A/B）
+- 工具描述补充反例
+- 加 few-shot
+- 升级模型 / 微调
+
+**Phase 6：A/B 上线**
+- 灰度 5% → 25% → 50% → 100%
+- 监控核心指标：成功率、用户反馈、cost
+
+**Phase 7：回归测试**
+- 失败 case 入测试集，确保下次不再回退
+- 月度 / 季度全量回归
+
+**关键支撑**：
+- **数据基础设施**：trace 库 + 标注平台 + A/B 系统
+- **组织**：明确"模型 ops 团队"
+- **自动化**：失败检测 → 自动入 review 队列
+
+**指标看板**：
+- 端到端：成功率、用户满意度
+- 单步：tool accuracy、format compliance
+- 工程：latency、cost、error rate
+- 商业：转化、留存、客诉
+
+---
+
+### Q5：怎么建一个高质量的 Agent 测试集？
+
+**答**：
+
+**构建步骤**：
+
+**1. 定义"成功"**
+- 业务上算赢的标准是什么？
+- 写成 rubric（评分细则）
+
+**2. 来源多样化**
+- **真实流量采样**：代表分布
+- **专家构造**：覆盖关键场景
+- **Adversarial**：边界、攻击、异常
+- **Synthetic**：LLM 生成补充覆盖度
+
+**3. 维度覆盖**
+- 任务类型（不同 use case）
+- 难度（简单 / 中等 / 困难）
+- 输入风格（口语、专业、模糊）
+- 用户类型（新手 / 老手 / 恶意）
+- 边界（空输入、超长、违规）
+
+**4. 标注**
+- **Ground truth**：标"正确答案"（如果有）
+- **Rubric**：标各维度分数标准
+- **多人标注 + 一致性检查**：Cohen's kappa > 0.6
+
+**5. 分层**
+- **Smoke test**：核心场景 20~50 例，CI 每次跑
+- **Regression**：完整测试集 500~2000 例，发版前跑
+- **Adversarial**：100~500 例，专门攻击
+
+**6. 持续扩展**
+- 生产失败 case 自动入候选
+- 月度 review，挑选高价值的加入正式集
+- 避免测试集"过拟合"：偶尔轮换
+
+**7. 元数据丰富**
+- 每条标 tag：场景、难度、来源
+- 便于切片分析（"困难场景成功率"）
+
+**反模式**：
+- ❌ 只用 happy path 例子
+- ❌ 测试集与训练 / few-shot 重合
+- ❌ 单一标注员（偏差）
+- ❌ 永远不更新
+
+---
+
+### Q6：Trace 的关键字段有哪些？怎么设计 schema？
+
+**答**：
+
+**核心 schema**（参考 OpenTelemetry GenAI semantic conventions）：
+
+**Session / Trace 级别**：
+- `trace_id`、`span_id`、`parent_span_id`
+- `user_id`、`session_id`
+- `start_time`、`end_time`、`duration_ms`
+- `service.name`、`environment`
+- 业务字段：`task_type`、`feature_flag`
+
+**LLM 调用级别**：
+- `gen_ai.system`、`gen_ai.model`、`gen_ai.model_version`
+- `gen_ai.prompt`（messages 数组）
+- `gen_ai.completion`
+- `gen_ai.usage.input_tokens`、`output_tokens`、`cached_tokens`
+- `gen_ai.cost_usd`
+- `gen_ai.temperature`、`top_p`、`max_tokens`
+- `gen_ai.stop_reason`
+
+**Tool 调用级别**：
+- `gen_ai.tool.name`
+- `gen_ai.tool.arguments`
+- `gen_ai.tool.result`
+- `gen_ai.tool.error`
+- `gen_ai.tool.duration_ms`
+
+**Agent 状态**：
+- `agent.step_number`
+- `agent.plan`（如有）
+- `agent.scratchpad`
+- `agent.checkpoint_id`
+
+**用户反馈**（事后写入）：
+- `feedback.thumb`（up/down）
+- `feedback.score`
+- `feedback.comment`
+- `feedback.timestamp`
+
+**评估结果**（异步写入）：
+- `eval.faithfulness_score`
+- `eval.tool_accuracy`
+- `eval.judge_model`
+
+**设计原则**：
+1. **标准化**：用 OTel 约定，便于工具对接
+2. **可查询**：关键字段建索引（user_id、model、cost）
+3. **隐私**：PII 字段单独存（可一键删除）
+4. **采样**：全量贵，关键路径全量、其他采样
+5. **保留期**：trace 30~90 天，metrics 1 年
+
+---
+
+### Q7：成本怎么评估和归因？
+
+**答**：
+
+**成本组成**：
+- LLM token 费（最大头）
+- Embedding API 费
+- 工具调用费（外部 API）
+- 向量库 / 数据库
+- Compute（推理 GPU）
+
+**评估维度**：
+
+**1. 每会话成本**
+- 单次完整任务的总 cost
+- 中位数 / P95 / P99
+- 异常大开销 case 告警
+
+**2. 每用户成本**
+- 高消耗用户识别（top 1% 占多少）
+- 是否需要 rate limit
+
+**3. 每功能成本**
+- 不同 use case 哪个最贵
+- ROI：贡献价值 vs 成本
+
+**4. 模型对比成本**
+- 同任务在不同模型上的 cost
+- 哪些场景可降级（GPT-4 → 4o-mini）
+
+**归因方法**：
+
+```
+total_cost = Σ (model_call_cost + tool_call_cost + storage_cost)
+
+model_call_cost = input_tokens * input_price + output_tokens * output_price - cache_hits * input_price * 0.9
+```
+
+**降本手段**（评估有哪些杠杆）：
+
+1. **Prompt Caching**（最大杠杆）：50~90% 折扣
+2. **模型分层**：复杂决策用大模型，执行用小模型
+3. **缓存**：Semantic cache for 重复 query
+4. **批处理**：Batch API 50% 折扣
+5. **Prompt 优化**：砍冗余 system prompt
+6. **工具结果压缩**：避免 token 爆
+7. **早停**：不必要的探索及早终止
+
+**Dashboard 必备**：
+- 总 cost 趋势
+- Top 5 expensive sessions
+- Cost per task
+- Cache hit rate
+- Token utilization by component
+
+---
+
+## 四、场景设计题（含答案）
+
+### 场景 1：生产 Agent 准确率下跌排查
+
+**题目**：生产客服 Agent 准确率从 85% 掉到 70%。给定 trace 日志，怎么定位？
+
+**答案**：
+
+**排查 checklist**：
+
+**Step 1：确认现象**
+- 准确率怎么测的？是 LLM-judge 还是人工？
+- 时间窗口、覆盖样本量
+- 是缓慢下滑还是突变？（突变更易定位）
+
+**Step 2：分析时间线**
+- 何时开始下降？
+- 关联事件：发版、prompt 改动、模型升级、数据变更
+- 看 trace 时间分布：是某天突然变差还是匀速恶化
+
+**Step 3：切片对比**
+- 按 user_type、query_type、tool_used、model 切片
+- 找差异最大的切片 → 锁定问题域
+
+**Step 4：失败案例 deep dive**
+- 抽 20~50 个失败 trace
+- 人工 / LLM-judge 归因：
+  - 检索召回错？
+  - 工具调错？
+  - 模型 reasoning 错？
+  - 生成时偏离 context？
+
+**Step 5：常见根因**
+- **数据漂移**：用户问题分布变了（如新产品上线，新问题没覆盖）
+- **模型变更**：API 端模型升级（GPT-4o → 4.1 行为变了）
+- **Prompt 改动**：上次发版改了 prompt，引入回归
+- **工具变更**：某 API 改了 response 格式
+- **知识库 stale**：文档没更新
+
+**Step 6：验证假设**
+- 把怀疑根因还原，离线跑测试集
+- 看准确率是否回到 85%
+
+**Step 7：修复 + 上线**
+- 修复 → 灰度
+- 失败 case 入测试集（防止再回退）
+
+**面试加分**：
+- 强调"事前埋点"的重要性（没有 trace 啥也没法查）
+- 提到"模型版本固定"（用 `gpt-4-2024-08-06` 而非 `gpt-4`）
+- 提到**金丝雀部署**：每次模型更新先小流量验证
+
+---
+
+### 场景 2：从 0 搭建 Agent 评估体系
+
+**题目**：一个新做的 Agent 即将上线，PM 问"准确率多少"？目前完全没评估。怎么从 0 搭？
+
+**答案**：
+
+**Phase 1：MVP 评估（1 周内）**
+
+1. **定义"成功"**
+   - 拉 5~10 个 PM + 业务方碰，明确什么算成功
+   - 写成 rubric
+
+2. **建小型测试集**
+   - 50~100 例覆盖核心场景
+   - 来源：PM 提供的典型 case + 历史客诉 + adversarial
+
+3. **快速基线**
+   - 跑当前版本，人工标对错
+   - 得到一个"baseline 准确率"
+   - 不要追求完美，先给数字
+
+**Phase 2：自动化（2~4 周）**
+
+4. **LLM-as-Judge**
+   - 写 judge prompt，对齐人工标注
+   - 跑同测试集，看与人工一致率
+   - 一致率 > 80% 才能用
+
+5. **CI 集成**
+   - 每次发版自动跑测试集
+   - 准确率回退超过 5% 阻断上线
+
+6. **Trace 平台**
+   - 接入 LangSmith / Langfuse
+   - 生产流量全 trace
+
+**Phase 3：飞轮启动（1~3 月）**
+
+7. **生产采样评估**
+   - 每天采 100~1000 trace 自动评估
+   - 失败 case 入 review 队列
+
+8. **人工 review 周会**
+   - 每周抽 50 个失败 review
+   - 归因 → 入优化 backlog
+
+9. **数据飞轮**
+   - 失败 case → 优化 → A/B → 入测试集
+   - 月度看准确率趋势
+
+**Phase 4：成熟（3~6 月）**
+
+10. **多维评估**
+    - 不只一个 score，按维度（accuracy / efficiency / safety）
+    - 用户分群（VIP / 普通）
+
+11. **业务指标关联**
+    - 准确率 vs 转化率相关性
+    - 找到真正影响业务的瓶颈维度
+
+12. **持续优化**
+    - 测试集季度更新
+    - Judge prompt 季度回看
+    - 评估方法 paper 跟踪
+
+**给 PM 的答案模板**：
+> "当前 Beta 测试集上准确率 X%，覆盖 N 种典型场景。我们建立了：自动回归（CI 阻断 5% 回退）、生产 trace + 自动评估、月度 review 流程。Q3 目标：准确率 +10%，端到端用户满意度 +5pp。"
+
+---
+
+## 五、自测清单
+
+- [ ] 三层评估（端到端 / 单步 / 轨迹）
+- [ ] LLM-as-Judge 6 大偏差与校正
+- [ ] Ragas 4 大指标（Faithfulness / Answer Relevance / Context Precision / Recall）
+- [ ] 工具调用评估的维度
+- [ ] 轨迹评估的 6 个维度
+- [ ] 数据飞轮 7 个 phase
+- [ ] OpenTelemetry GenAI 核心字段
+- [ ] 成本归因的拆解维度
+- [ ] 从 0 搭评估的 4 个 phase
+
+---
+
+## 六、延伸阅读
+
+- Anthropic — *Evaluations Guide*
+- OpenAI — *Evals Cookbook*
+- LangSmith Documentation — *Evaluations*
+- Ragas — Documentation
+- Zheng et al. — *Judging LLM-as-a-Judge*
+- Eugene Yan — *AI Evals Patterns*
+- Hamel Husain — *Your AI Product Needs Evals*
