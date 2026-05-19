@@ -31,6 +31,8 @@
 | Day 8 | 工程化：性能、成本、可靠性 | 延迟、Prompt Caching、模型路由、限流、降级 | [Day08-工程化性能成本可靠性.md](./Day08-工程化性能成本可靠性.md) |
 | Day 9 | 安全与对齐 | Prompt Injection、Jailbreak、HITL、权限隔离、Guardrails | [Day09-安全与对齐.md](./Day09-安全与对齐.md) |
 | Day 10 | 综合系统设计 | Code Agent / Deep Research / GUI Agent / 企业知识问答 | [Day10-综合系统设计.md](./Day10-综合系统设计.md) |
+| Day 11 | Voice / Realtime Agent（进阶） | Pipeline vs E2E、延迟治理、Barge-in、电话客服、英语口语 | [Day11-Voice与Realtime Agent.md](./Day11-Voice与Realtime%20Agent.md) |
+| Day 12 | Reasoning Models 专题（进阶） | o1/R1/Claude Thinking、RLVR、GRPO、test-time compute、Agent 中的角色 | [Day12-Reasoning Models专题.md](./Day12-Reasoning%20Models专题.md) |
 
 ---
 
@@ -97,6 +99,8 @@
 - [ ] Day 8 — 工程化：性能、成本、可靠性
 - [ ] Day 9 — 安全与对齐
 - [ ] Day 10 — 综合系统设计
+- [ ] Day 11 — Voice / Realtime Agent（进阶专题）
+- [ ] Day 12 — Reasoning Models（进阶专题）
 
 ---
 

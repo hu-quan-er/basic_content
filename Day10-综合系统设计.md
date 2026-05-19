@@ -1,0 +1,685 @@
+# Day 10 — 综合系统设计
+
+> 目标：能在 30~45 分钟内系统设计一个典型 Agent 产品，覆盖前 9 天所有知识点。
+
+---
+
+## 一、系统设计答题框架（必背）
+
+### 1.1 标准 6 步法
+
+| 步骤 | 内容 | 时间占比 |
+|------|------|----------|
+| **1. 需求澄清** | 功能 + 非功能 + 边界 | 10% |
+| **2. 顶层架构** | 主流程、关键模块、数据流 | 20% |
+| **3. 核心组件** | LLM 选型、Agent 架构、工具、记忆、RAG | 30% |
+| **4. 关键决策** | Tradeoff 分析、备选方案 | 20% |
+| **5. 工程化** | 评估、监控、安全、降本 | 10% |
+| **6. 风险与演进** | 失败模式、演进路径 | 10% |
+
+### 1.2 需求澄清的 5 个问题
+
+1. **用户与场景**：谁用？什么场景？高峰流量？
+2. **任务边界**：能做什么？不做什么？
+3. **质量要求**：准确率？延迟？成本？
+4. **数据**：知识库规模？是否实时？是否私有？
+5. **约束**：合规？私有部署？多语言？
+
+### 1.3 非功能需求清单
+- 准确率 / 任务成功率
+- 延迟（TTFT、TTLT）
+- 吞吐（QPS）
+- 成本（每会话 / 每用户）
+- 可用性（SLA）
+- 合规（数据出境、隐私）
+- 安全（防注入、HITL）
+- 可观测、可调试
+
+### 1.4 顶层架构模版
+
+```
+┌─────────────────────────────────────────────┐
+│ Frontend / API Gateway                      │
+│  - 鉴权、限流、入口路由                       │
+├─────────────────────────────────────────────┤
+│ Agent Orchestrator                          │
+│  - 路由 / Planner                            │
+│  - 单 Agent 或多 Agent                       │
+│  - HITL 控制                                 │
+├─────────────────────────────────────────────┤
+│ LLM Layer                                   │
+│  - 模型路由（Haiku/Sonnet/Opus）              │
+│  - Prompt Caching                           │
+│  - Fallback chain                           │
+├─────────────────────────────────────────────┤
+│ Capability Layer                            │
+│  - Tools / MCP servers                      │
+│  - RAG / Vector store                       │
+│  - Memory（短期 / 长期）                      │
+├─────────────────────────────────────────────┤
+│ Data Layer                                  │
+│  - 业务 DB、向量库、KV、对象存储              │
+├─────────────────────────────────────────────┤
+│ Observability & Safety                      │
+│  - Trace、Metrics、Logs                     │
+│  - Guardrails、Audit、Eval                  │
+└─────────────────────────────────────────────┘
+```
+
+---
+
+## 二、典型系统设计案例
+
+## 案例 1：Code Agent（Cursor / Claude Code 类）
+
+### 需求
+- 在大型代码库（10k+ 文件）中做 PR 级修改
+- 用户给自然语言任务 → Agent 自主读改测
+- 高准确率（avoid breaking changes）、容错性低
+
+### 架构选择
+**单 Agent 长 context**（参考 Cognition / Anthropic 实践）：
+- 任务高度耦合，不拆多 Agent
+- 强模型（Opus / Sonnet thinking） + 长 context（200k）
+- 必要时拆出 search sub-agent
+
+### 核心组件
+
+**1. Agent Loop**
+- ReAct 范式
+- Plan mode（可选先规划）
+- 流式输出 trace 给用户
+
+**2. 工具集**
+- File ops：Read / Edit / Write
+- Search：Grep / Glob / Find
+- Execution：Bash（沙箱）、Run Tests
+- VCS：Git status / diff / commit（push 需 HITL）
+
+**3. 上下文管理**
+- 文件按 path 去重（同文件最新版本）
+- 工具结果摘要（大输出截断）
+- 阶段 checkpoint summary（每 10 步压缩）
+
+**4. 安全**
+- 必须先 Read 才能 Edit（防盲改）
+- 破坏性 Bash 命令 HITL（rm、git push --force）
+- 沙箱执行（不能访问 host fs / 网络）
+
+**5. 评估**
+- SWE-Bench / HumanEval 标准 benchmark
+- 自建：内部 PR 数据集，标注"是否解决了原 issue"
+- 在线：PR 合并率、回退率、用户接受率
+
+### 关键决策
+
+| 问题 | 决策 | 理由 |
+|------|------|------|
+| 单 vs 多 Agent | 单 Agent | 代码任务紧耦合 |
+| Plan-Execute vs ReAct | ReAct + 可选 Plan | 探索性强 |
+| 上下文：长 vs 摘要 | 长 + 阶段摘要 | 代码细节不能丢 |
+| 模型 | Sonnet 4.x / Opus | 工具调用 + 代码能力 |
+| 工具：标准化 | Read 优先于 Edit | 强制读后写 |
+
+### 工程化
+- 用 LangGraph 编排（checkpoint + HITL + streaming）
+- 文件系统状态持久化（thread-level）
+- 失败 case 自动入 eval set
+- Token 监控：单 task 上限 1M token
+
+### 风险与演进
+- **风险**：误改导致测试挂、生产事故
+- **缓解**：必须跑测试通过才提交、PR review
+- **演进**：从单文件 → 多文件 → 跨 repo 重构
+
+---
+
+## 案例 2：Deep Research Agent
+
+### 需求
+- 用户给研究主题 → Agent 自主搜、读、综合
+- 输出长 report（5000+ 字）+ 引用
+- 可能跑 10~30 分钟（异步）
+
+### 架构选择
+**Supervisor + Sub-Agent**（参考 OpenAI Deep Research、Anthropic Research）：
+- 主 Agent 规划 + 协调
+- 子 Agent 并行处理子主题
+- Writer Agent 综合写作
+
+### 核心组件
+
+**1. Lead Researcher**
+- 接到主题 → 拆分 N 个子问题（5~10）
+- 派 Sub-Researcher 并行
+- Critic 检查覆盖度，缺失补查
+- 触发 Writer
+
+**2. Sub-Researcher**
+- 接收子问题 + 全局背景
+- 多轮 ReAct：search、fetch、note
+- 工具：web_search、fetch_url、read_pdf、arxiv_search
+- 输出：结构化 findings（claims + sources）
+
+**3. Writer Agent**
+- 汇总所有 findings
+- 按大纲写作（intro / 各小节 / 结论）
+- 引用规范（[1], [2] + 来源列表）
+
+**4. Critic**
+- 评估 report：完整性、准确性、引用质量
+- 不达标 → 标缺失 → 回到 Researcher
+
+### 上下文管理
+- Sub-Agent context 隔离（不互相看 trace）
+- 主 Agent 只看 findings 摘要
+- Writer 看完整 findings 集
+
+### 关键决策
+- **拆 Agent**：值得，因为子问题独立 + 并行加速 + 子 context 不污染主
+- **模型**：Lead/Writer 用 Opus，Sub 用 Sonnet，搜索摘要用 Haiku
+- **异步**：长任务必须异步（前端 poll 状态）
+
+### 评估
+- 准确率（引用是否真支持 claim）
+- 覆盖率（关键子主题是否都涉及）
+- 用户满意度（thumbs up）
+- 与人工写作对比（pairwise）
+
+### 工程化
+- 任务队列（Celery / Temporal）
+- Checkpointer 持久化
+- 中途可干预（HITL）
+- Cost 上限（每任务 $10）
+
+### 风险
+- 长任务卡死 → 超时熔断
+- Hallucination → 强 grounding + 引用校验
+- 信息源质量 → 来源白名单 + 权威度评分
+
+---
+
+## 案例 3：GUI Agent / Computer Use
+
+### 需求
+- Agent 通过截图 + 鼠标键盘操作 GUI
+- 完成"订机票""填表"等任务
+- Anthropic Computer Use / OpenAI Operator 范式
+
+### 架构选择
+**单 Agent + 多模态 + 长 context**
+
+### 核心组件
+
+**1. Perception**
+- 截图作为 VLM 输入
+- 部分实现：DOM tree 抽取（如果是浏览器）
+- 元素定位（坐标 / accessibility tree）
+
+**2. Action**
+- 点击 / 输入 / 滚动 / 等待
+- 工具：`click(x, y)`、`type(text)`、`scroll`、`screenshot`、`wait`
+
+**3. Loop**
+- 截图 → 观察 → 决策 → 行动 → 等待 → 截图 → ...
+- 每步保留：截图 + thought + action
+- context 可能很长
+
+### 关键挑战与决策
+
+**1. 准确点击**
+- 用 VLM 框出坐标
+- 误差大 → 多尝试 + 验证
+- 优先 DOM / accessibility（如果可用）
+
+**2. 异步状态**
+- 点击后页面加载需要等
+- `wait_for_idle` 工具或固定 sleep
+
+**3. 安全（最严重）**
+- 绝对不能访问敏感网站（银行、邮箱）
+- 必须 HITL 在关键操作（提交订单、付款）
+- 用户能随时打断
+- 沙箱浏览器（不在主机器跑）
+
+**4. 上下文**
+- 截图 token 极大（一张图几千 token）
+- 旧截图压缩 / 删除（只留最近 N）
+
+**5. 失败恢复**
+- 截图变化检测：操作没生效 → 重试 / 换法
+- 卡住 → 截图 + 报告用户
+
+### 评估
+- WebArena / OSWorld benchmark
+- 自建任务集
+- 任务成功率、平均步数、人工干预次数
+
+### 风险
+- **极高**：可能被诱导填错地方
+- **缓解**：强 HITL、白名单网站、沙箱浏览器、用户全程监督
+
+---
+
+## 案例 4：企业知识问答（RAG-based）
+
+### 需求
+- 企业内部文档（5w+ 文档）+ Wiki + Confluence
+- 员工自然语言问答
+- 多用户、多权限（按部门 / 角色）
+
+### 架构选择
+**单 Agent + Agentic RAG**
+
+### 核心组件
+
+**1. 数据接入**
+- 文档源：Confluence、Notion、Google Drive、SharePoint
+- 增量同步：webhook / 定时
+- 元数据：作者、部门、更新时间、权限
+
+**2. 索引**
+- 切分：document-aware（保持 section / table 完整）
+- Embedding：bge-m3（多语言）
+- 向量库：pgvector / Qdrant
+- BM25 索引并存（hybrid）
+
+**3. 检索**
+- Hybrid retrieval（dense + bm25）
+- Rerank（cohere / bge-reranker）
+- Metadata filter：按用户权限过滤
+- Multi-query / HyDE 增强
+
+**4. 生成**
+- 强 grounding prompt
+- 引用强制：每论断标 source
+- 不知道就说不知道
+
+**5. Agentic 行为**
+- Agent 判断是否需要检索（简单问候不查）
+- Multi-hop 问题：多次检索
+- 找不到 → 触发 web search 兜底
+
+### 权限模型
+- 每个 chunk 标 access_control（角色 / 部门）
+- 查询时用户 token → 角色 → metadata filter
+- 数据库层兜底（防绕过）
+
+### 评估
+- Ragas 四指标
+- 用户反馈（thumbs）
+- "找不到答案率"（指标，过高说明知识库 / 检索差）
+
+### 工程化
+- 同步：Kafka pipeline
+- 增量索引
+- A/B 框架（embedding / rerank 模型）
+- 失败回流（用户 thumbs down → review queue）
+
+### 风险
+- **泄密**：权限漏过滤 → 多层校验
+- **过期答案**：metadata 标新鲜度，旧文档降权
+- **维护成本**：文档质量决定上限
+
+---
+
+## 案例 5：多模态客服 Agent
+
+### 需求
+- 电商客服：图（订单截图）+ 文字
+- 解决：订单查询、退换货、商品咨询
+- 高并发（日 100w+）
+
+### 架构选择
+**分层处理 + 多模态 + 工具**
+
+### 核心组件
+
+**1. 多模态理解**
+- VLM 处理图片（订单截图、商品图、问题截图）
+- 抽取关键信息：订单号、商品 ID、问题描述
+
+**2. 分层路由**
+```
+L1: Semantic Cache（30%）
+L2: FAQ 规则（30%）
+L3: 小模型 RAG（30%）
+L4: 大模型 Agent（9%）
+L5: 人工（1%）
+```
+
+**3. 工具**
+- search_order、view_order_details
+- initiate_refund（HITL）
+- search_products
+- check_shipping
+- create_ticket（转人工）
+
+**4. 上下文**
+- 用户身份穿透：自动带 user_id
+- 对话历史短期（buffer + summary）
+- 长期记忆（用户偏好、历史问题）
+
+**5. 安全**
+- 严防越权（只能查自己订单）
+- 退款上限：< $100 自动；$100+ HITL
+- 客户辱骂检测 → 转人工
+
+### 关键决策
+
+| 问题 | 决策 |
+|------|------|
+| 高并发性能 | 多层缓存、Haiku 兜底 |
+| 多模态成本 | 图先用规则检测是否需 VLM |
+| 上下文长度 | 摘要 + 关键 entity 存 KV |
+| 模型 | Haiku 主、Sonnet 兜底 |
+| 部署 | 跨地域多 region |
+
+### 评估
+- 解决率（不转人工）
+- 用户满意度（5 分制）
+- 平均处理时间
+- 误退款率（财务红线）
+
+### 工程化
+- 限流：每用户 10 QPS
+- Cost 监控：日均 < $500
+- 失败 case：自动入 review
+- 月度 prompt 迭代
+
+---
+
+## 三、综合面试题（含答案）
+
+### Q1：给你一个新业务领域，怎么 0 到 1 设计一个 Agent？
+
+**答**：
+
+**Phase 0：需求澄清**
+- 与业务方对话：用户、场景、关键指标
+- 明确"成功"的定义（rubric）
+- 列非功能需求
+
+**Phase 1：MVP（1~2 周）**
+- 用最简方案：单 Agent + ReAct + 必要工具
+- 用 Claude / GPT API 跑通 happy path
+- 建 50~100 例测试集
+
+**Phase 2：评估闭环（2~4 周）**
+- LangSmith / Langfuse 接入
+- LLM-as-Judge 评估
+- CI 跑测试集
+- 失败 case review
+
+**Phase 3：优化（持续）**
+- Prompt 优化 → A/B 测试
+- 工具完善
+- RAG 优化（如果用）
+- 模型升级 / 路由
+
+**Phase 4：生产化（与优化并行）**
+- 限流、熔断、降级
+- 安全 guardrails
+- 成本监控
+- HITL
+
+**Phase 5：飞轮（持续）**
+- 用户反馈收集
+- 失败 case → 测试集
+- 月度 / 季度全面 review
+
+**关键原则**：
+1. **先跑通再优化**：MVP 优先级最高
+2. **早测早稳**：测试集是基础设施
+3. **小步快跑**：每次只改一个变量
+4. **数据驱动**：所有决策都要有指标支撑
+
+---
+
+### Q2：怎么决定单 Agent vs 多 Agent？
+
+**答**：
+
+**默认单 Agent**。Cognition 和 Anthropic 都建议从单 Agent 起步。
+
+**拆分信号**：
+
+1. **角色边界清晰**：生成 + 评估明显是两人活
+2. **上下文污染**：单 Agent 看不该看的导致跑偏
+3. **可并行子任务**：研究多个独立子主题
+4. **不同模型适合不同任务**：成本与能力平衡
+5. **单 Agent context 真的爆了**
+
+**反信号（保持单 Agent）**：
+
+1. **任务紧耦合**：每步都需全局上下文
+2. **Sub-Agent 缺全局意图**：传递摘要会丢关键信息
+3. **沟通成本 > 隔离收益**
+4. **长 context 模型够用**
+
+**实战经验**：
+- Coding Agent：单 Agent（Cursor、Claude Code）
+- Research Agent：多 Agent（OpenAI Deep Research、Anthropic Research）
+- 客服：分层路由 + 单 Agent
+- 数据分析：单 Agent + 工具
+
+**面试加分**：
+> 我会先用单 Agent 跑出 baseline，分析瓶颈在哪。如果瓶颈是 context 爆 / 角色混乱，再考虑拆。如果是 LLM 能力不够，拆了也救不回来。
+
+---
+
+### Q3：用户问你 Agent 准确率多少，你怎么答？
+
+**答**：
+
+**反问**：
+
+1. **哪个维度**：端到端任务成功 / 工具调用 / 生成质量？
+2. **哪个数据集**：内部测试集 / 生产采样 / 公开 benchmark？
+3. **怎么定义"对"**：人工 / LLM-judge / 自动测试？
+4. **什么场景**：核心 happy path 还是含 edge case？
+
+**正确答法**：
+> "当前内部测试集（500 例，覆盖核心场景）准确率 X%。生产采样 LLM-judge 评估 Y%。我们设的 CI 阻断阈值是 Z%。"
+> "更重要的是：成功率 vs 业务指标的关联 — 解决率 / 转人工率 / 用户满意度。"
+
+**避免**：
+- ❌ "大概 90% 吧"（没有依据，被追问完蛋）
+- ❌ "我们还没评估"（直接 hire 决策 nope）
+- ❌ 报一个超高数字（PM 不信）
+
+---
+
+### Q4：Agent 系统线上事故，故障定位流程？
+
+**答**：
+
+**事故分级**：
+- P0：服务完全不可用、数据泄露
+- P1：错误率 > 50%
+- P2：错误率突增
+- P3：用户反馈个例问题
+
+**通用流程**（参考 SRE）：
+
+**1. 检测（detection）**
+- 监控告警：错误率、延迟、cost 异常
+- 用户反馈：客诉、社交媒体
+
+**2. 响应（response）**
+- 拉群、明确 owner
+- 决定是否需要紧急回滚
+
+**3. 缓解（mitigation）**
+- 优先：止血 > 根因
+- 手段：回滚、降级、限流、熔断
+
+**4. 定位（diagnosis）**
+- Trace 切片：按时间、用户、版本
+- 对比 before / after
+- 看变更日志：最近什么发版了？
+
+**5. 修复（resolution）**
+- 根因修复
+- 测试验证
+- 灰度上线
+
+**6. 复盘（postmortem）**
+- 时间线
+- 根因
+- 检测延迟分析
+- 改进项（防再次发生）
+- 测试集补充
+
+**Agent 特有的故障类型**：
+- **准确率掉**：模型更新、prompt 改动、数据漂移、知识库 stale
+- **延迟爆**：上游 API 慢、上下文爆、模型限流
+- **成本爆**：循环、token 爆、cache miss
+- **安全事故**：注入成功、PII 泄露、误调敏感工具
+
+---
+
+### Q5：Agent 项目从 POC 到生产怎么落地？
+
+**答**：
+
+**4 阶段路线**：
+
+**Phase 1：POC（1~2 周）**
+- 目标：证明可行性
+- 用最快方案（Claude API + LangChain）
+- demo 给业务方看
+- **不要追求工程质量**
+
+**Phase 2：Pilot（4~6 周）**
+- 目标：小流量真实场景验证
+- 加：评估、监控、限流、HITL
+- 灰度 1~5% 流量
+- 收集真实反馈
+
+**Phase 3：Production（持续）**
+- 目标：全量上线
+- 加：高可用、跨区、成本治理、安全合规
+- 100% 流量、SLA 承诺
+- 数据飞轮跑起来
+
+**Phase 4：Optimization（持续）**
+- 目标：质量 / 成本持续优化
+- 月度 prompt 迭代
+- 季度模型评估
+- 半年架构 review
+
+**关键里程碑**：
+
+| 里程碑 | 标志 |
+|--------|------|
+| POC 通过 | 业务方愿意继续投入 |
+| Pilot 通过 | 准确率 / 满意度达标 |
+| 生产上线 | 监控 + SLA + 应急预案就绪 |
+| 飞轮成熟 | 持续自我改进 |
+
+**常见踩坑**：
+- POC 太完美 → 误以为生产化容易
+- 没建评估 → 上线后不知道好坏
+- 没限流 → 第一波流量打爆
+- 没安全 → 第一周就被攻破
+- 没成本监控 → 月底账单吓人
+
+**面试加分**：
+- 把 Agent 当**产品**而非 demo
+- 强调"评估 + 监控 + 安全 + 成本"四件套是生产门票
+- 提到组织 / 流程的重要性（不只技术）
+
+---
+
+## 四、模拟面试节奏
+
+### 30 分钟模拟
+
+**0~3 min**：开场，了解你背景
+
+**3~10 min**：基础概念（任选 5 题）
+- Agent vs Workflow
+- ReAct vs Plan-Execute
+- Prompt Injection 防御
+- Hybrid 检索
+- LangGraph 核心
+- 多 Agent 拆分判据
+
+**10~25 min**：系统设计（任选 1 案例）
+- Code Agent / Deep Research / 客服 / RAG / Computer Use
+
+**25~30 min**：反问 + 收尾
+
+### 答题节奏控制
+
+- 概念题：30s~2min，不要太短也别太长
+- 系统设计：先澄清 1~2min，再讲架构 5~7min，再讨论细节 5~7min
+- 留时间让面试官追问 / 引导
+
+### 如何"接住"追问
+
+- 面试官说 "如果...怎么办" → 不要慌
+- 思路：先复述场景 + 拆变量 + 分析 tradeoff + 给方案
+- 不会就说不会：**比胡说强一万倍**
+
+### 反问环节准备
+- 团队规模、Agent 在产品中的定位
+- 当前最大技术挑战
+- 评估体系成熟度
+- 数据飞轮跑起来了吗
+- 用什么模型、为什么
+
+---
+
+## 五、复习总览（速查表）
+
+### 五大支柱
+1. **LLM 基础**：Transformer / 采样 / SFT / RLHF
+2. **推理范式**：CoT / ReAct / Plan-Execute / Reflexion
+3. **能力**：Tools / Memory / RAG
+4. **多 Agent**：拓扑 / 角色 / LangGraph
+5. **工程**：评估 / 可观测 / 安全 / 性能 / 成本
+
+### 必答金句
+- "Agent 不是银弹，先 Workflow 再 Agent"
+- "Anthropic 在 *Building Effective Agents* 中建议..."
+- "Cognition 反对多 Agent 是因为..."
+- "Lost in the Middle 现象"
+- "Prompt Injection 没有银弹，深度防御"
+- "评估是 Agent 生产化的基础设施"
+- "Prompt Caching 是 Agent 场景最大的成本杠杆"
+
+### 高频框架名熟悉度
+- LangChain / LangGraph / LangSmith
+- AutoGen / CrewAI / OpenAI Agents SDK
+- MCP（重点）
+- Ragas / Langfuse / Phoenix
+- vLLM / TGI
+- E2B（沙箱）
+- Mem0 / Letta（记忆）
+
+---
+
+## 六、最后建议
+
+1. **先讲思路，后讲细节**：面试官想看你怎么想，不是背诵
+2. **承认不确定**：说"这个我不确定，但我倾向于..."比硬装好
+3. **联系实际**：用你做过的项目佐证
+4. **保持互动**：面试是对话不是演讲
+5. **诚实**：吹的越大坑越深
+
+**祝面试顺利！**
+
+---
+
+## 七、延伸阅读
+
+- Anthropic — *Building Effective Agents*
+- Anthropic — *How we built our multi-agent research system*
+- Cognition — *Don't Build Multi-Agents*
+- OpenAI — *A practical guide to building agents*
+- Eugene Yan — *Patterns for Building LLM-based Systems*
+- Hamel Husain — *Your AI Product Needs Evals*
+- Simon Willison — 关于 Prompt Injection 的系列文章
+- Lilian Weng — *LLM Powered Autonomous Agents*
