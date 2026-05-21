@@ -33,6 +33,7 @@
 | Day 10 | 综合系统设计 | Code Agent / Deep Research / GUI Agent / 企业知识问答 | [Day10-综合系统设计.md](./Day10-综合系统设计.md) |
 | Day 11 | Voice / Realtime Agent（进阶） | Pipeline vs E2E、延迟治理、Barge-in、电话客服、英语口语 | [Day11-Voice与Realtime Agent.md](./Day11-Voice与Realtime%20Agent.md) |
 | Day 12 | Reasoning Models 专题（进阶） | o1/R1/Claude Thinking、RLVR、GRPO、test-time compute、Agent 中的角色 | [Day12-Reasoning Models专题.md](./Day12-Reasoning%20Models专题.md) |
+| Day 13 | A2A 与 Agent 互操作协议（进阶） | A2A/MCP/ACP、Agent Card、Task 生命周期、跨组织协作 | [Day13-A2A与Agent互操作协议.md](./Day13-A2A与Agent互操作协议.md) |
 
 ---
 
@@ -101,6 +102,7 @@
 - [ ] Day 10 — 综合系统设计
 - [ ] Day 11 — Voice / Realtime Agent（进阶专题）
 - [ ] Day 12 — Reasoning Models（进阶专题）
+- [ ] Day 13 — A2A 与 Agent 互操作协议（进阶专题）
 
 ---
 
