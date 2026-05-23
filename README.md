@@ -1,4 +1,4 @@
-# Agent 工程师面试 · 10 天复习计划
+# Agent 工程师面试 · 14 天复习计划
 
 > 面向 Agent 工程师面试的系统复习，覆盖：基础概念 + 主流框架/工具/SDK + 场景设计。
 > 每天一个主题，每个主题包含「核心概念 → 主流实现 → 高频面试题（含答案）→ 场景设计题（含答案）」。
@@ -12,12 +12,12 @@
 ├─ 范式层：ReAct / Plan-Execute / Reflexion / Multi-Agent
 ├─ 能力层：工具使用 / 记忆 / 检索 / 上下文工程
 ├─ 框架层：LangChain / LangGraph / AutoGen / CrewAI / MCP
-└─ 工程层：评估 / 可观测 / 安全 / 性能 / 成本
+└─ 工程层：评估 / 可观测 / 安全 / 性能 / 成本 / 可靠执行
 ```
 
 ---
 
-## 10 天学习计划
+## 14 天学习计划
 
 | Day | 主题 | 重点 | 文件 |
 |-----|------|------|------|
@@ -34,6 +34,7 @@
 | Day 11 | Voice / Realtime Agent（进阶） | Pipeline vs E2E、延迟治理、Barge-in、电话客服、英语口语 | [Day11-Voice与Realtime Agent.md](./Day11-Voice与Realtime%20Agent.md) |
 | Day 12 | Reasoning Models 专题（进阶） | o1/R1/Claude Thinking、RLVR、GRPO、test-time compute、Agent 中的角色 | [Day12-Reasoning Models专题.md](./Day12-Reasoning%20Models专题.md) |
 | Day 13 | A2A 与 Agent 互操作协议（进阶） | A2A/MCP/ACP、Agent Card、Task 生命周期、跨组织协作 | [Day13-A2A与Agent互操作协议.md](./Day13-A2A与Agent互操作协议.md) |
+| Day 14 | Agent 工程细节与可靠执行（进阶） | 结构化计划、Executor 状态机、子 Agent 完成保障、异常兜底、幂等恢复 | [Day14-Agent工程细节与可靠执行.md](./Day14-Agent工程细节与可靠执行.md) |
 
 ---
 
@@ -85,6 +86,7 @@
 | 评估 | LLM-as-Judge 偏差；Trace 评估；数据飞轮 |
 | 工程 | 缓存策略；延迟优化；成本治理 |
 | 安全 | Prompt Injection；HITL；权限隔离 |
+| 可靠执行 | 结构化 Plan；子 Agent 完成保障；重试幂等；Checkpoint |
 
 ---
 
@@ -103,6 +105,7 @@
 - [ ] Day 11 — Voice / Realtime Agent（进阶专题）
 - [ ] Day 12 — Reasoning Models（进阶专题）
 - [ ] Day 13 — A2A 与 Agent 互操作协议（进阶专题）
+- [ ] Day 14 — Agent 工程细节与可靠执行（进阶专题）
 
 ---
 
