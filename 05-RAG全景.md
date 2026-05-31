@@ -1,4 +1,4 @@
-# Day 5 — RAG 全景
+# RAG 全景
 
 > 目标：从朴素 RAG 到 Advanced / Modular / Agentic RAG 的完整图景，能针对场景做架构决策。
 

@@ -1,4 +1,4 @@
-# Day 12 — Reasoning Models 专题
+# Reasoning Models 专题
 
 > 目标：搞懂 o1 / o3 / DeepSeek R1 / Claude Extended Thinking 这一代"推理模型"的训练原理、推理机制、工程使用，以及在 Agent 中的角色。这是 2024 Q4 ~ 2025 LLM 领域最大变化。
 

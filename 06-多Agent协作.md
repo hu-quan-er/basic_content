@@ -1,4 +1,4 @@
-# Day 6 — 多 Agent 协作
+# 多 Agent 协作
 
 > 目标：掌握主流多 Agent 拓扑、主流框架（LangGraph、AutoGen、CrewAI）核心机制，能针对场景选型。
 

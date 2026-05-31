@@ -1,4 +1,4 @@
-# Day 3 — 工具使用与 MCP
+# 工具使用与 MCP
 
 > 目标：掌握 Function Calling 的工程细节、工具治理方案、以及 MCP 协议的设计动机。
 

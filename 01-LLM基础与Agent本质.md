@@ -1,4 +1,4 @@
-# Day 1 — LLM 基础与 Agent 本质
+# LLM 基础与 Agent 本质
 
 > 目标：建立从 Token 到 Agent 的完整心智模型，能讲清楚 Agent 与 Workflow / Chatbot 的本质区别。
 

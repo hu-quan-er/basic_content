@@ -1,4 +1,4 @@
-# Day 15 — AI Coding Harness 最佳实践
+# AI Coding Harness 最佳实践
 
 > 目标：系统掌握如何为 AI Coding / Coding Agent 搭建可复用的工程脚手架，让 AI 少猜、多验证、可恢复、可审查。本文聚焦“如何更好地使用 AI Coding”，不是介绍模型原理。
 

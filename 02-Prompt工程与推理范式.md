@@ -1,4 +1,4 @@
-# Day 2 — Prompt 工程与推理范式
+# Prompt 工程与推理范式
 
 > 目标：掌握主流推理范式（CoT、ReAct、Plan-Execute、Reflexion、ToT）的原理、差异与选型。
 

@@ -1,4 +1,4 @@
-# Day 11 — Voice / Realtime Agent
+# Voice / Realtime Agent
 
 > 目标：掌握实时语音 Agent 的核心架构、延迟治理、双工对话、与主流实时 API 的工程细节。这是 2024~2025 最热的 Agent 方向之一。
 
