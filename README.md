@@ -23,7 +23,8 @@
 |---|------|------|------|
 | 1 | LLM 基础与 Agent 本质 | Transformer、采样、训练阶段、Agent 定义、Workflow vs Agent | [01-LLM基础与Agent本质.md](./01-LLM基础与Agent本质.md) |
 | 2 | Prompt 工程与推理范式 | CoT、ReAct、Plan-Execute、Reflexion、ToT、结构化输出 | [02-Prompt工程与推理范式.md](./02-Prompt工程与推理范式.md) |
-| 3 | 工具使用与 MCP | Function Calling、工具 Schema、Tool RAG、MCP 协议 | [03-工具使用与MCP.md](./03-工具使用与MCP.md) |
+| 3 | 工具调用 | Function Calling、工具 Schema、并行与依赖、FC vs 代码 workflow、Tool RAG、沙箱 | [03-工具调用.md](./03-工具调用.md) |
+| 3.1 | └ MCP 协议详解 | 动机、Host/Client/Server、三原语、传输、vs function calling、安全 | [03.1-MCP.md](./03.1-MCP.md) |
 | 4 | 记忆与上下文工程 | 短/长期记忆、MemGPT、Context Engineering、Lost in Middle | [04-记忆与上下文工程.md](./04-记忆与上下文工程.md) |
 | 5 | RAG 全景 | 朴素/进阶/Agentic RAG、Hybrid 检索、Rerank、GraphRAG | [05-RAG全景.md](./05-RAG全景.md) |
 | 6 | 多 Agent 协作 | 拓扑、角色范式、LangGraph、AutoGen、CrewAI | [06-多Agent协作.md](./06-多Agent协作.md) |
@@ -38,6 +39,8 @@
 | 15 | AI Coding Harness 最佳实践（进阶） | AGENTS.md/CLAUDE.md、任务包、验证脚本、进度文件、权限与 hooks | [15-AI Coding Harness最佳实践.md](./15-AI%20Coding%20Harness最佳实践.md) |
 | 16 | Agent Loop 专题（进阶） | 单次迭代解剖、终止条件、上下文压缩、范式对 loop 的改造、死循环检测、框架 loop 对比（含 Go/eino 实现） | [16-Agent Loop专题.md](./16-Agent%20Loop专题.md) |
 | 16.1 | └ Agent Loop 停止条件设计（子文档） | 五个停止维度、完成信号陷阱、死循环检测、主流产品停止机制对照、收尾策略（Python + Go/eino） | [16.1-Agent Loop停止条件设计.md](./16.1-Agent%20Loop停止条件设计.md) |
+| 16.2 | └ Agent Loop 上下文管理（子文档） | 五种控制策略详解、组合 pipeline、LangChain/LangGraph/LlamaIndex/Claude/OpenAI/MemGPT/Mem0 对比分析 | [16.2-Agent Loop上下文管理.md](./16.2-Agent%20Loop上下文管理.md) |
+| 16.3 | └ Agent Loop 人在回路（子文档） | HITL 六种模式、自治光谱、触发策略、暂停-持久化-恢复、LangGraph/Claude/AutoGen/CrewAI/HumanLayer/Temporal 对比 | [16.3-Agent Loop人在回路.md](./16.3-Agent%20Loop人在回路.md) |
 | 17 | 上下文窗口的模型原理（进阶） | 自注意力 O(n²)、KV Cache、位置编码与外推、Lost in the Middle、长上下文架构方向 | [17-上下文窗口的模型原理.md](./17-上下文窗口的模型原理.md) |
 | 18 | 模型固有局限与工程兜底（进阶） | 19 类原理性局限的全景表、七种通用兜底模式、模型缺陷与系统设计的对应 | [18-模型固有局限与工程兜底.md](./18-模型固有局限与工程兜底.md) |
 
@@ -79,7 +82,8 @@
 |------|--------|
 | 基础 | Agent 定义；Workflow vs Agent；Function Calling 底层 |
 | 推理 | ReAct vs Plan-Execute；CoT 涌现；Reflexion |
-| 工具 | 工具描述设计；多工具治理；MCP 价值 |
+| 工具调用 | 工具描述设计；并行与依赖；FC vs 代码 workflow；多工具治理 |
+| MCP | 碎片化→标准化；三原语；vs function calling；工具投毒安全 |
 | 记忆 | 短长期记忆架构；上下文爆炸；MemGPT |
 | RAG | 召回错排查；Hybrid 权重；Rerank；Agentic RAG |
 | 多 Agent | 拓扑选型；LangGraph 核心；单 vs 多 |
@@ -98,7 +102,8 @@
 
 - [ ] LLM 基础与 Agent 本质
 - [ ] Prompt 工程与推理范式
-- [ ] 工具使用与 MCP
+- [ ] 工具调用
+- [ ] MCP 协议详解
 - [ ] 记忆与上下文工程
 - [ ] RAG 全景
 - [ ] 多 Agent 协作

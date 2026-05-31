@@ -245,21 +245,16 @@ Action: finish(answer="724 元")
 | 分层（Working / Episodic / Long-term） | 仿 MemGPT 分层调度 | 实现复杂 |
 | 工具结果引用化 | 大结果存 artifact，context 只放 id | 需要二次取数 |
 
-### 5.3 Compaction（压缩）的工程要点
+### 5.3 关键要点
 
-- **触发时机**：context 用量达阈值（如 70%）触发，而非等到爆。
-- **压缩对象**：压缩旧的 observation，保留 plan、关键结论、未完成事项。
-- **保护区**：system prompt、当前目标、最近一轮永不压缩。
-- **不可逆风险**：压缩会丢信息，重要事实应在压缩前固化到结构化 state（见 《Agent工程细节与可靠执行》 的 run state）。
+- **触发式压缩**：context 用量达阈值（如 70%）才触发 compaction，并保护 system prompt、当前目标、最近一轮；重要事实在压缩前固化到结构化 state（见《Agent工程细节与可靠执行》）。
+- **Scratchpad vs 长期记忆**：loop 主要靠 scratchpad（本 run 内的工作记忆，结束即弃）；长期记忆（跨 run 知识/偏好）是按需检索注入的外部源。
 
-**核心结论**：上下文管理的目标不是"塞更多"，而是"每轮只给模型决策这一步所必需的最小充分信息"——这就是 Context Engineering 在 loop 里的落地（见 《记忆与上下文工程》）。
+**核心结论**：上下文管理的目标不是"塞更多"，而是"每轮只给模型决策这一步所必需的最小充分信息"——这就是 Context Engineering 在 loop 里的落地（见《记忆与上下文工程》）。
 
-### 5.4 Scratchpad vs 长期记忆
-
-- **Scratchpad（短期/工作记忆）**：本次 run 内的中间变量、已知事实，随 loop 推进累积，run 结束即弃。
-- **长期记忆**：跨 run 的知识/偏好，存向量库/数据库，按需检索进 context。
-
-agent loop 主要靠 scratchpad；长期记忆是"按需注入 context 组装阶段"的外部源。
+> 📖 **五种控制策略的逐一详解、组合 pipeline，以及 LangChain / LangGraph / LlamaIndex / Claude Agent SDK / OpenAI Assistants / MemGPT(Letta) / Mem0 等主流实现的对比分析，单独拆到子文档：**
+>
+> **《[16.2-Agent Loop 上下文管理](./16.2-Agent%20Loop上下文管理.md)》**
 
 ---
 
@@ -356,6 +351,10 @@ Orchestrator Loop
 
 ### 8.3 Human-in-the-Loop（中断 / 审批）
 在 loop 的某些动作前插入审批闸：高风险动作（转账、删库、发邮件）暂停 loop，等人确认再继续。要求 loop 能**暂停—持久化—恢复**（见 LangGraph 的 interrupt）。
+
+> 📖 HITL 的六种模式、触发策略、暂停-持久化-恢复的技术核心，以及 LangGraph / Claude / OpenAI SDK / AutoGen / CrewAI / HumanLayer / Temporal 的实现对比，单独拆到子文档：
+>
+> **《[16.3-Agent Loop 人在回路](./16.3-Agent%20Loop人在回路.md)》**
 
 ### 8.4 嵌套 / 委派
 工具本身可以是另一个 agent（agent-as-tool）。一个 loop 的一次"工具调用"展开成另一个完整 loop。
