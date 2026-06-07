@@ -12,7 +12,7 @@
 ├─ 范式层：ReAct / Plan-Execute / Reflexion / Multi-Agent
 ├─ 能力层：工具使用 / 记忆 / 检索 / 上下文工程
 ├─ 框架层：LangChain / LangGraph / AutoGen / CrewAI / MCP
-└─ 工程层：评估 / 可观测 / 安全 / 性能 / 成本 / 可靠执行 / AI Coding Harness
+└─ 工程层：评估 / 可观测 / 安全 / 性能 / 成本 / 推理加速 / 可靠执行 / AI Coding Harness
 ```
 
 ---
@@ -21,7 +21,8 @@
 
 | # | 主题 | 重点 | 文件 |
 |---|------|------|------|
-| 1 | LLM 基础与 Agent 本质 | Transformer、采样、训练阶段、Agent 定义、Workflow vs Agent | [01-LLM基础与Agent本质.md](./01-LLM基础与Agent本质.md) |
+| 1 | LLM 基础与 Agent 本质 | Token、采样、训练阶段、Function Calling、Agent 定义、Workflow vs Agent | [01-LLM基础与Agent本质.md](./01-LLM基础与Agent本质.md) |
+| 1.1 | └ Transformer 架构与模型原理（子文档） | Transformer block、Q/K/V、encoder/decoder 分叉、decoder-only、Scaling Laws、MoE、SSM/Mamba、架构演进 | [01.1-Transformer架构与模型原理.md](./01.1-Transformer架构与模型原理.md) |
 | 2 | Prompt 工程与推理范式 | CoT、ReAct、Plan-Execute、Reflexion、ToT、结构化输出 | [02-Prompt工程与推理范式.md](./02-Prompt工程与推理范式.md) |
 | 3 | 工具调用 | Function Calling、工具 Schema、并行与依赖、FC vs 代码 workflow、Tool RAG、沙箱 | [03-工具调用.md](./03-工具调用.md) |
 | 3.1 | └ MCP 协议详解 | 动机、Host/Client/Server、三原语、传输、vs function calling、安全 | [03.1-MCP.md](./03.1-MCP.md) |
@@ -30,6 +31,7 @@
 | 6 | 多 Agent 协作 | 拓扑、角色范式、LangGraph、AutoGen、CrewAI | [06-多Agent协作.md](./06-多Agent协作.md) |
 | 7 | 评估与可观测性 | 三层评估、LLM-as-Judge、Ragas、LangSmith、数据飞轮 | [07-评估与可观测性.md](./07-评估与可观测性.md) |
 | 8 | 工程化：性能、成本、可靠性 | 延迟、Prompt Caching、模型路由、限流、降级 | [08-工程化性能成本可靠性.md](./08-工程化性能成本可靠性.md) |
+| 8.1 | └ 生产级 Agent 应用工程（子文档） | 业务边界、架构分层、状态机、工具网关、安全治理、HITL、评估、可观测、发布运维、成熟度模型 | [08.1-生产级Agent应用工程.md](./08.1-生产级Agent应用工程.md) |
 | 9 | 安全与对齐 | Prompt Injection、Jailbreak、HITL、权限隔离、Guardrails | [09-安全与对齐.md](./09-安全与对齐.md) |
 | 10 | 综合系统设计 | Code Agent / Deep Research / GUI Agent / 企业知识问答 | [10-综合系统设计.md](./10-综合系统设计.md) |
 | 11 | Voice / Realtime Agent（进阶） | Pipeline vs E2E、延迟治理、Barge-in、电话客服、英语口语 | [11-Voice与Realtime Agent.md](./11-Voice与Realtime%20Agent.md) |
@@ -43,6 +45,8 @@
 | 16.3 | └ Agent Loop 人在回路（子文档） | HITL 六种模式、自治光谱、触发策略、暂停-持久化-恢复、LangGraph/Claude/AutoGen/CrewAI/HumanLayer/Temporal 对比 | [16.3-Agent Loop人在回路.md](./16.3-Agent%20Loop人在回路.md) |
 | 17 | 上下文窗口的模型原理（进阶） | 自注意力 O(n²)、KV Cache、位置编码与外推、Lost in the Middle、长上下文架构方向 | [17-上下文窗口的模型原理.md](./17-上下文窗口的模型原理.md) |
 | 18 | 模型固有局限与工程兜底（进阶） | 19 类原理性局限的全景表、七种通用兜底模式、模型缺陷与系统设计的对应 | [18-模型固有局限与工程兜底.md](./18-模型固有局限与工程兜底.md) |
+| 19 | 推理加速底层系统（进阶） | prefill/decode、Roofline、KV Cache、PagedAttention、RadixAttention、FlashAttention、continuous batching、speculative decoding、量化、P/D disaggregation | [19-推理加速底层系统.md](./19-推理加速底层系统.md) |
+| 19.1 | └ Agent 推理加速落地（子文档） | Agent 延迟拆解、少调用少 token、工具并行、模型分层、上下文压缩、多层缓存、结构化输出、可观测优化闭环 | [19.1-Agent推理加速落地.md](./19.1-Agent推理加速落地.md) |
 
 ---
 
@@ -80,7 +84,8 @@
 
 | 主题 | 关键点 |
 |------|--------|
-| 基础 | Agent 定义；Workflow vs Agent；Function Calling 底层 |
+| 基础 | Token/采样/训练阶段；Agent 定义；Workflow vs Agent；Function Calling 底层 |
+| Transformer 架构 | Attention/FFN/residual；encoder-only vs decoder-only；RoPE/ALiBi；MoE；SSM/Mamba；Scaling Laws |
 | 推理 | ReAct vs Plan-Execute；CoT 涌现；Reflexion |
 | 工具调用 | 工具描述设计；并行与依赖；FC vs 代码 workflow；多工具治理 |
 | MCP | 碎片化→标准化；三原语；vs function calling；工具投毒安全 |
@@ -89,18 +94,22 @@
 | 多 Agent | 拓扑选型；LangGraph 核心；单 vs 多 |
 | 评估 | LLM-as-Judge 偏差；Trace 评估；数据飞轮 |
 | 工程 | 缓存策略；延迟优化；成本治理 |
+| 生产级 Agent | 任务合同；自治等级；Orchestrator；Run State；Tool Gateway；Guardrails；HITL；Eval；Trace；灰度回滚 |
 | 安全 | Prompt Injection；HITL；权限隔离 |
 | 可靠执行 | 结构化 Plan；子 Agent 完成保障；重试幂等；Checkpoint |
 | AI Coding | Harness；任务包；验证闭环；长任务恢复 |
 | Agent Loop | 一轮六阶段；终止双闸；死循环检测；上下文压缩；ReAct vs Plan-Execute；LangGraph vs AgentExecutor |
 | 上下文窗口原理 | 自注意力 O(n²)；KV Cache 显存；RoPE/ALiBi 外推；Lost in the Middle；FlashAttention/GQA/SSM |
 | 局限与兜底 | 幻觉/时效/数学→外接真相源；格式→约束生成；注入→信任边界；七类局限对七种兜底模式 |
+| 推理加速底层 | prefill vs decode；TTFT/TPOT；Roofline；KV Cache；PagedAttention vs FlashAttention；RadixAttention；continuous batching；speculative decoding；量化；P/D 分离 |
+| Agent 推理加速 | 串行 LLM hop；prefill tax；工具并行；模型路由；reasoning budget；prefix/tool/semantic cache；结构化输出；trace 优化闭环 |
 
 ---
 
 ## 进度跟踪
 
 - [ ] LLM 基础与 Agent 本质
+- [ ] Transformer 架构与模型原理
 - [ ] Prompt 工程与推理范式
 - [ ] 工具调用
 - [ ] MCP 协议详解
@@ -109,6 +118,7 @@
 - [ ] 多 Agent 协作
 - [ ] 评估与可观测性
 - [ ] 工程化：性能、成本、可靠性
+- [ ] 生产级 Agent 应用工程
 - [ ] 安全与对齐
 - [ ] 综合系统设计
 - [ ] Voice / Realtime Agent（进阶专题）
@@ -119,6 +129,8 @@
 - [ ] Agent Loop 专题（进阶专题）
 - [ ] 上下文窗口的模型原理（进阶专题）
 - [ ] 模型固有局限与工程兜底（进阶专题）
+- [ ] 推理加速底层系统（进阶专题）
+- [ ] Agent 推理加速落地（进阶专题）
 
 ---
 

@@ -6,10 +6,10 @@
 
 ## 一、核心概念
 
-### 1.1 Transformer / Decoder-only
-- **自注意力（Self-Attention）**：每个 token 通过 Q/K/V 计算与所有其他 token 的关联度
-- **Decoder-only 架构**：GPT 系列、Claude、Llama 都采用；因果掩码（Causal Mask）保证只能看到前文
-- **位置编码**：绝对位置（Sinusoidal）→ 相对位置（RoPE / ALiBi），RoPE 主导现代 LLM 因为外推性好
+### 1.1 LLM 的底层心智模型
+- **Transformer 是底座**：现代 LLM 的主干仍然是 token embedding + attention + FFN + residual stream + normalization 的层叠结构
+- **Decoder-only 是主流**：GPT / Claude / Llama / Qwen / DeepSeek 等通用生成模型主要采用 causal decoder-only，因为它天然匹配 next-token prediction、流式生成和工具调用
+- **模型原理拆到子文档**：Transformer 架构、Q/K/V、encoder/decoder 分叉、位置编码、MoE、长上下文、SSM/Mamba 等架构演进，详见《[01.1-Transformer架构与模型原理](./01.1-Transformer架构与模型原理.md)》
 
 ### 1.2 Token 与上下文窗口
 - **Tokenization**：BPE（Byte-Pair Encoding）、SentencePiece；中文一般 1.5~2 字符/token，英文约 4 字符/token
@@ -140,7 +140,7 @@
 **不一定**。三个角度：
 
 1. **能力 ≠ 容量**：Lost in the Middle 现象（Liu et al. 2023）显示长上下文中段的信息利用率显著下降
-2. **成本与延迟**：输入 token 计费 + 注意力 O(n²) 计算（虽然 FlashAttention 优化到接近线性，但延迟仍随长度增长）
+2. **成本与延迟**：输入 token 计费 + 注意力 O(n²) 计算（FlashAttention 降低 IO 和显存搬运，但不改变精确 attention 的平方复杂度）
 3. **质量退化**：超过训练长度后，即使技术上能输入，模型可能输出质量明显下降
 
 实践：
