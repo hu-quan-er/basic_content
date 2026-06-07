@@ -26,7 +26,9 @@
 | 2 | Prompt 工程与推理范式 | CoT、ReAct、Plan-Execute、Reflexion、ToT、结构化输出 | [02-Prompt工程与推理范式.md](./02-Prompt工程与推理范式.md) |
 | 3 | 工具调用 | Function Calling、工具 Schema、并行与依赖、FC vs 代码 workflow、Tool RAG、沙箱 | [03-工具调用.md](./03-工具调用.md) |
 | 3.1 | └ MCP 协议详解 | 动机、Host/Client/Server、三原语、传输、vs function calling、安全 | [03.1-MCP.md](./03.1-MCP.md) |
-| 4 | 记忆与上下文工程 | 短/长期记忆、MemGPT、Context Engineering、Lost in Middle | [04-记忆与上下文工程.md](./04-记忆与上下文工程.md) |
+| 4 | 记忆与上下文工程 | 记忆 vs 上下文、State/Memory/Artifact 区分、阅读路径、核心术语 | [04-记忆与上下文工程.md](./04-记忆与上下文工程.md) |
+| 4.1 | └ 生产级 Agent 记忆工程（子文档） | 记忆提取、验证、存储、召回、显式注入 vs 按需检索、更新/遗忘、隐私治理、评估指标 | [04.1-生产级Agent记忆工程.md](./04.1-生产级Agent记忆工程.md) |
+| 4.2 | └ Agent 上下文工程（子文档） | Prompt 拼接、上下文分层、token 预算、压缩、引用化、Lost in the Middle、防污染、Context Manifest | [04.2-Agent上下文工程.md](./04.2-Agent上下文工程.md) |
 | 5 | RAG 全景 | 朴素/进阶/Agentic RAG、Hybrid 检索、Rerank、GraphRAG | [05-RAG全景.md](./05-RAG全景.md) |
 | 6 | 多 Agent 协作 | 拓扑、角色范式、LangGraph、AutoGen、CrewAI | [06-多Agent协作.md](./06-多Agent协作.md) |
 | 7 | 评估与可观测性 | 三层评估、LLM-as-Judge、Ragas、LangSmith、数据飞轮 | [07-评估与可观测性.md](./07-评估与可观测性.md) |
@@ -95,7 +97,8 @@
 | 推理 | ReAct vs Plan-Execute；CoT 涌现；Reflexion |
 | 工具调用 | 工具描述设计；并行与依赖；FC vs 代码 workflow；多工具治理 |
 | MCP | 碎片化→标准化；三原语；vs function calling；工具投毒安全 |
-| 记忆 | 短长期记忆架构；上下文爆炸；MemGPT |
+| 记忆 | Core Memory；Session Memory；Archival Memory；提取/验证/存储/召回/注入；显式注入 vs 按需检索；记忆治理 |
+| 上下文工程 | Prompt 拼接；上下文分层；token 预算；压缩；artifact 引用化；Context Manifest；Lost in the Middle；防污染 |
 | RAG | 召回错排查；Hybrid 权重；Rerank；Agentic RAG |
 | 多 Agent | 拓扑选型；LangGraph 核心；单 vs 多 |
 | 多 Agent 状态 | State Catalog；Context View；State Patch；Artifact-first；Handoff Contract；A2A Context Envelope；Reducer；Conflict Policy；Framework State |
@@ -122,6 +125,8 @@
 - [ ] 工具调用
 - [ ] MCP 协议详解
 - [ ] 记忆与上下文工程
+- [ ] 生产级 Agent 记忆工程
+- [ ] Agent 上下文工程
 - [ ] RAG 全景
 - [ ] 多 Agent 协作
 - [ ] 评估与可观测性
