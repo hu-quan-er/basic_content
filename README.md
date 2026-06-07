@@ -12,7 +12,7 @@
 ├─ 范式层：ReAct / Plan-Execute / Reflexion / Multi-Agent
 ├─ 能力层：工具使用 / 记忆 / 检索 / 上下文工程
 ├─ 框架层：LangChain / LangGraph / AutoGen / CrewAI / MCP
-└─ 工程层：评估 / 可观测 / 安全 / 性能 / 成本 / 推理加速 / 可靠执行 / AI Coding Harness
+└─ 工程层：评估 / 可观测 / 安全 / 性能 / 成本 / 推理加速 / Agent Runtime / 可靠执行 / AI Coding Harness
 ```
 
 ---
@@ -55,6 +55,9 @@
 | 18 | 模型固有局限与工程兜底（进阶） | 19 类原理性局限的全景表、七种通用兜底模式、模型缺陷与系统设计的对应 | [18-模型固有局限与工程兜底.md](./18-模型固有局限与工程兜底.md) |
 | 19 | 推理加速底层系统（进阶） | prefill/decode、Roofline、KV Cache、PagedAttention、RadixAttention、FlashAttention、continuous batching、speculative decoding、量化、P/D disaggregation | [19-推理加速底层系统.md](./19-推理加速底层系统.md) |
 | 19.1 | └ Agent 推理加速落地（子文档） | Agent 延迟拆解、少调用少 token、工具并行、模型分层、上下文压缩、多层缓存、结构化输出、可观测优化闭环 | [19.1-Agent推理加速落地.md](./19.1-Agent推理加速落地.md) |
+| 20 | Agent Runtime 专题（进阶） | Run 生命周期、Agent Loop、调度器、状态/检查点、工具网关、HITL、handoff、可观测、durable execution | [20-Agent Runtime专题.md](./20-Agent%20Runtime专题.md) |
+| 20.1 | └ Agent Runtime 完整实现（子文档） | 可运行 Python runtime、RunState、ToolGateway、Policy/HITL、Checkpoint、Resume、Event Log | [20.1-Agent Runtime完整实现.md](./20.1-Agent%20Runtime完整实现.md) |
+| 20.2 | └ 主流 Agent Runtime 实现对比（子文档） | LangGraph、OpenAI Agents SDK、Google ADK、AutoGen、CrewAI、LlamaIndex、Semantic Kernel、Letta、Temporal | [20.2-主流Agent Runtime实现对比.md](./20.2-主流Agent%20Runtime实现对比.md) |
 
 ---
 
@@ -114,6 +117,7 @@
 | 局限与兜底 | 幻觉/时效/数学→外接真相源；格式→约束生成；注入→信任边界；七类局限对七种兜底模式 |
 | 推理加速底层 | prefill vs decode；TTFT/TPOT；Roofline；KV Cache；PagedAttention vs FlashAttention；RadixAttention；continuous batching；speculative decoding；量化；P/D 分离 |
 | Agent 推理加速 | 串行 LLM hop；prefill tax；工具并行；模型路由；reasoning budget；prefix/tool/semantic cache；结构化输出；trace 优化闭环 |
+| Agent Runtime | Run；Step；Scheduler；RunState；Context Builder；Tool Gateway；Policy/HITL；Checkpoint；Resume；Handoff；Event Log；Trace；Durable Execution |
 
 ---
 
@@ -150,6 +154,9 @@
 - [ ] 模型固有局限与工程兜底（进阶专题）
 - [ ] 推理加速底层系统（进阶专题）
 - [ ] Agent 推理加速落地（进阶专题）
+- [ ] Agent Runtime 专题（进阶专题）
+- [ ] Agent Runtime 完整实现（进阶专题）
+- [ ] 主流 Agent Runtime 实现对比（进阶专题）
 
 ---
 
