@@ -1,6 +1,8 @@
 # A2A 与 Agent 互操作协议
 
 > 目标：理解为什么需要 Agent 互操作协议、A2A / MCP / ACP 等主流方案的设计差异、何时该用、怎么落地。这是 2025 年 Agent 生态级的关键演进。
+>
+> 补充专题：多 Agent 下的状态管理、上下文同步、handoff、共享记忆和主流框架实现对比，见 [13.1-多Agent状态管理与上下文同步.md](./13.1-多Agent状态管理与上下文同步.md)。
 
 ---
 
@@ -1043,6 +1045,7 @@ POST /a2a {tasks/sendSubscribe}
 - [ ] Opaque 设计的 5 个理由
 - [ ] A2A 安全的协议层 + 应用层
 - [ ] indirect prompt injection 跨 Agent 风险
+- [ ] 多 Agent 状态管理与上下文同步边界
 - [ ] A2A vs ACP 的差异
 - [ ] 何时用 A2A 何时用直接 API
 - [ ] AGNTCY 与 A2A 的关系
@@ -1063,6 +1066,8 @@ POST /a2a {tasks/sendSubscribe}
 | Message | Agent 间通信单位 |
 | Part | Message / Artifact 内的内容片段（Text/File/Data） |
 | Artifact | Agent 产生的结果工件 |
+| Handoff Contract | Agent 之间交接任务时的目标、约束、证据与返回格式 |
+| State Patch | Agent 对共享任务状态提交的结构化更新 |
 | Streaming (SSE) | Server-Sent Events 实时更新 |
 | Push Notification | Webhook 异步通知 |
 | Well-known URL | `/.well-known/agent.json` 标准位置 |

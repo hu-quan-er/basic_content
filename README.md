@@ -37,6 +37,7 @@
 | 11 | Voice / Realtime Agent（进阶） | Pipeline vs E2E、延迟治理、Barge-in、电话客服、英语口语 | [11-Voice与Realtime Agent.md](./11-Voice与Realtime%20Agent.md) |
 | 12 | Reasoning Models 专题（进阶） | o1/R1/Claude Thinking、RLVR、GRPO、test-time compute、Agent 中的角色 | [12-Reasoning Models专题.md](./12-Reasoning%20Models专题.md) |
 | 13 | A2A 与 Agent 互操作协议（进阶） | A2A/MCP/ACP、Agent Card、Task 生命周期、跨组织协作 | [13-A2A与Agent互操作协议.md](./13-A2A与Agent互操作协议.md) |
+| 13.1 | └ 多 Agent 状态管理与上下文同步（子文档） | Global State、Local Context、Shared Memory、Artifact、Handoff Contract、State Patch、冲突解决、A2A/LangGraph/AutoGen/CrewAI/OpenAI/MCP 对比 | [13.1-多Agent状态管理与上下文同步.md](./13.1-多Agent状态管理与上下文同步.md) |
 | 14 | Agent 工程细节与可靠执行（进阶） | 结构化计划、Executor 状态机、子 Agent 完成保障、异常兜底、幂等恢复 | [14-Agent工程细节与可靠执行.md](./14-Agent工程细节与可靠执行.md) |
 | 15 | AI Coding Harness 最佳实践（进阶） | AGENTS.md/CLAUDE.md、任务包、验证脚本、进度文件、权限与 hooks | [15-AI Coding Harness最佳实践.md](./15-AI%20Coding%20Harness最佳实践.md) |
 | 16 | Agent Loop 专题（进阶） | 单次迭代解剖、终止条件、上下文压缩、范式对 loop 的改造、死循环检测、框架 loop 对比（含 Go/eino 实现） | [16-Agent Loop专题.md](./16-Agent%20Loop专题.md) |
@@ -92,6 +93,7 @@
 | 记忆 | 短长期记忆架构；上下文爆炸；MemGPT |
 | RAG | 召回错排查；Hybrid 权重；Rerank；Agentic RAG |
 | 多 Agent | 拓扑选型；LangGraph 核心；单 vs 多 |
+| 多 Agent 状态 | Global State；Local Context；Shared Working Memory；Artifact-first；Handoff Contract；State Patch；Reducer；Conflict Policy |
 | 评估 | LLM-as-Judge 偏差；Trace 评估；数据飞轮 |
 | 工程 | 缓存策略；延迟优化；成本治理 |
 | 生产级 Agent | 任务合同；自治等级；Orchestrator；Run State；Tool Gateway；Guardrails；HITL；Eval；Trace；灰度回滚 |
@@ -124,6 +126,7 @@
 - [ ] Voice / Realtime Agent（进阶专题）
 - [ ] Reasoning Models（进阶专题）
 - [ ] A2A 与 Agent 互操作协议（进阶专题）
+- [ ] 多 Agent 状态管理与上下文同步（进阶专题）
 - [ ] Agent 工程细节与可靠执行（进阶专题）
 - [ ] AI Coding Harness 最佳实践（进阶专题）
 - [ ] Agent Loop 专题（进阶专题）
