@@ -10,9 +10,9 @@
 ```
 ┌─ 基础层：LLM 原理 + Prompt 工程
 ├─ 范式层：ReAct / Plan-Execute / Reflexion / Multi-Agent
-├─ 能力层：工具使用 / 记忆 / 检索 / 上下文工程
+├─ 能力层：工具使用 / Tool Gateway / 记忆 / 检索 / 上下文工程 / 结构化输出
 ├─ 框架层：LangChain / LangGraph / AutoGen / CrewAI / MCP
-└─ 工程层：评估 / 可观测 / 安全 / 性能 / 成本 / 推理加速 / Agent Runtime / 可靠执行 / AI Coding Harness
+└─ 工程层：评估 / Eval Harness / 可观测 / 安全 / 性能 / 成本 / 推理加速 / Agent Runtime / Browser Agent / 可靠执行 / AI Coding Harness
 ```
 
 ---
@@ -58,6 +58,10 @@
 | 20 | Agent Runtime 专题（进阶） | Run 生命周期、Agent Loop、调度器、状态/检查点、工具网关、HITL、handoff、可观测、durable execution | [20-Agent Runtime专题.md](./20-Agent%20Runtime专题.md) |
 | 20.1 | └ Agent Runtime 完整实现（子文档） | 可运行 Python runtime、RunState、ToolGateway、Policy/HITL、Checkpoint、Resume、Event Log | [20.1-Agent Runtime完整实现.md](./20.1-Agent%20Runtime完整实现.md) |
 | 20.2 | └ 主流 Agent Runtime 实现对比（子文档） | LangGraph、OpenAI Agents SDK、Google ADK、AutoGen、CrewAI、LlamaIndex、Semantic Kernel、Letta、Temporal | [20.2-主流Agent Runtime实现对比.md](./20.2-主流Agent%20Runtime实现对比.md) |
+| 21 | Computer Use 与 Browser Agent 专题（进阶） | screenshot/DOM/accessibility tree、动作空间、locator、等待验证、HITL、安全边界、WebArena/OSWorld 评估 | [21-Computer Use与Browser Agent专题.md](./21-Computer%20Use与Browser%20Agent专题.md) |
+| 22 | 结构化输出与约束解码专题（进阶） | JSON mode、JSON Schema、tool args schema、CFG/FSM grammar、validator、repair loop、schema versioning、性能成本 | [22-结构化输出与约束解码专题.md](./22-结构化输出与约束解码专题.md) |
+| 23 | Tool Gateway 与工具平台专题（进阶） | 工具注册、Tool Retrieval、OpenAPI/MCP 接入、权限过滤、幂等、错误码、沙箱、审计、工具测试 | [23-Tool Gateway与工具平台专题.md](./23-Tool%20Gateway与工具平台专题.md) |
+| 24 | Agent Eval Harness 专题（进阶） | golden set、failure pool、trace replay、rule evaluator、LLM judge 校准、CI gate、线上采样、eval report | [24-Agent Eval Harness专题.md](./24-Agent%20Eval%20Harness专题.md) |
 
 ---
 
@@ -118,6 +122,10 @@
 | 推理加速底层 | prefill vs decode；TTFT/TPOT；Roofline；KV Cache；PagedAttention vs FlashAttention；RadixAttention；continuous batching；speculative decoding；量化；P/D 分离 |
 | Agent 推理加速 | 串行 LLM hop；prefill tax；工具并行；模型路由；reasoning budget；prefix/tool/semantic cache；结构化输出；trace 优化闭环 |
 | Agent Runtime | Run；Step；Scheduler；RunState；Context Builder；Tool Gateway；Policy/HITL；Checkpoint；Resume；Handoff；Event Log；Trace；Durable Execution |
+| Computer Use / Browser Agent | Screenshot；DOM；Accessibility Tree；Locator；Action Schema；Auto-wait；Verifier；Evidence-based Done；WebArena；OSWorld |
+| 结构化输出 | JSON Mode；JSON Schema；Tool Args Schema；Final Output Schema；Constrained Decoding；Validator；Repair Loop；Schema Version |
+| Tool Gateway | Tool Registry；Tool Retrieval；Permission Filter；Policy Engine；Risk Scoring；Idempotency；Sandbox；Audit；Tool Eval |
+| Agent Eval Harness | Golden Set；Regression Set；Trace Replay；Rule Evaluator；LLM Judge Calibration；CI Gate；Failure Pool；Shadow Eval |
 
 ---
 
@@ -157,6 +165,10 @@
 - [ ] Agent Runtime 专题（进阶专题）
 - [ ] Agent Runtime 完整实现（进阶专题）
 - [ ] 主流 Agent Runtime 实现对比（进阶专题）
+- [ ] Computer Use 与 Browser Agent（进阶专题）
+- [ ] 结构化输出与约束解码（进阶专题）
+- [ ] Tool Gateway 与工具平台（进阶专题）
+- [ ] Agent Eval Harness（进阶专题）
 
 ---
 
