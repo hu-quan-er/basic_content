@@ -8,7 +8,7 @@
 
 | 本文负责 | 本文不展开 |
 |---|---|
-| Agent Runtime 的 Run/Step 生命周期、调度、状态、checkpoint、HITL、handoff、event log、trace 和恢复机制 | 最小完整代码实现见 [20.1-Agent Runtime完整实现.md](./20.1-Agent%20Runtime完整实现.md)；主流框架对比见 [20.2-Agent Runtime主流实现对比.md](./20.2-Agent%20Runtime主流实现对比.md)；Agent Loop 内部细节见 [16-Agent Loop专题.md](./16-Agent%20Loop专题.md)；可靠执行模式见 [14-Agent工程细节与可靠执行.md](./14-Agent工程细节与可靠执行.md) |
+| Agent Runtime 的 Run/Step 生命周期、调度、状态、checkpoint、HITL、handoff、event log、trace 和恢复机制 | 最小完整代码实现见 [20.1-Agent Runtime完整实现.md](./20.1-Agent%20Runtime完整实现.md)；主流框架对比见 [20.2-Agent Runtime主流实现对比.md](./20.2-Agent%20Runtime主流实现对比.md)；Model Gateway 见 [26-Model Gateway与模型治理专题.md](./26-Model%20Gateway与模型治理专题.md)；Agent Loop 内部细节见 [16-Agent Loop专题.md](./16-Agent%20Loop专题.md)；可靠执行模式见 [14-Agent工程细节与可靠执行.md](./14-Agent工程细节与可靠执行.md) |
 
 ---
 
@@ -81,6 +81,7 @@ while True:
 | Orchestrator | 路由、计划、任务分解、状态流转 | 常是 Runtime 的核心模块 |
 | Workflow Engine | DAG/状态机/长事务/重试/定时器 | 可作为 Runtime 的 durable execution 底座 |
 | Tool Runtime | 工具执行、权限、隔离、超时、结果规范 | Runtime 通过 Tool Gateway 调用它 |
+| Model Gateway | 模型接入、路由、fallback、预算、缓存、版本和观测 | Runtime 通过 Model Gateway 发起模型调用 |
 | Model Runtime | 模型服务、推理调度、KV cache、batching | Agent Runtime 调用模型服务，但不等同于模型推理 runtime |
 | MCP | 工具/资源/提示词的连接协议 | Runtime 可把 MCP server 当工具来源 |
 | A2A | Agent 与 Agent 跨边界协作协议 | Runtime 负责把本地 run 映射成 A2A task/context |

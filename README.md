@@ -12,7 +12,7 @@
 ├─ 范式层：ReAct / Plan-Execute / Reflexion / Multi-Agent
 ├─ 能力层：工具使用 / Tool Gateway / 记忆 / 检索 / 上下文工程 / 结构化输出
 ├─ 框架层：LangChain / LangGraph / AutoGen / CrewAI / MCP
-└─ 工程层：评估 / Eval Harness / 可观测 / 安全 / 性能 / 成本 / 推理加速 / Agent Runtime / Browser Agent / 可靠执行 / AI Coding Harness
+└─ 工程层：评估 / Eval Harness / Model Gateway / 安全生命周期 / 可观测 / 安全 / 性能 / 成本 / 推理加速 / Agent Runtime / Browser Agent / 可靠执行 / AI Coding Harness
 ```
 
 ---
@@ -54,6 +54,8 @@
 | 23 | Tool Gateway 与工具平台专题（进阶） | 工具注册、Tool Retrieval、OpenAPI/MCP 接入、权限过滤、幂等、错误码、沙箱、审计、工具测试 | [23-Tool Gateway与工具平台专题.md](./23-Tool%20Gateway与工具平台专题.md) |
 | 24 | Agent Eval Harness 专题（进阶） | golden set、failure pool、trace replay、rule evaluator、LLM judge 校准、CI gate、线上采样、eval report | [24-Agent Eval Harness专题.md](./24-Agent%20Eval%20Harness专题.md) |
 | 25 | Buddy 型工作台智能体专题（进阶） | WorkBuddy、CodeBuddy、Qoder 类产品谱系、架构分层、上下文工程、工具集成、安全治理、评估体系 | [25-Buddy型工作台智能体专题](./25-Buddy型工作台智能体专题.md) |
+| 26 | Model Gateway 与模型治理专题（进阶） | 模型接入、模型注册、路由、fallback、预算、缓存、版本发布、观测、治理 | [26-Model Gateway与模型治理专题.md](./26-Model%20Gateway与模型治理专题.md) |
+| 27 | Agent 安全生命周期专题（进阶） | 全生命周期威胁建模、输入/上下文/模型/工具/执行/记忆/输出安全、防护实现、安全测试、事故响应 | [27-Agent安全生命周期专题.md](./27-Agent安全生命周期专题.md) |
 
 ---
 
@@ -151,6 +153,8 @@
 | Tool Gateway | Tool Registry；Tool Retrieval；Permission Filter；Policy Engine；Risk Scoring；Idempotency；Sandbox；Audit；Tool Eval |
 | Agent Eval Harness | Golden Set；Regression Set；Trace Replay；Rule Evaluator；LLM Judge Calibration；CI Gate；Failure Pool；Shadow Eval |
 | Buddy 工作台智能体 | WorkBuddy；CodeBuddy；Qoder；Task Contract；Context Manifest；Agent Runtime；Tool Gateway；HITL；Office Agent；Coding Agent；任务成功率 |
+| Model Gateway | Model Registry；Provider Adapter；Routing Policy；Fallback；Budget；Rate Limit；Cache；Prompt/Model Version；Trace；Cost Attribution |
+| Agent 安全生命周期 | Threat Modeling；Prompt Injection；Indirect Injection；Policy Engine；Permission Boundary；Tool/Model Gateway Policy；Sandbox；DLP；Security Eval；Incident Response |
 
 ---
 
@@ -189,6 +193,8 @@
 - [ ] Tool Gateway 与工具平台（进阶专题）
 - [ ] Agent Eval Harness（进阶专题）
 - [ ] Buddy 型工作台智能体（进阶专题）
+- [ ] Model Gateway 与模型治理（进阶专题）
+- [ ] Agent 安全生命周期（进阶专题）
 
 ---
 
