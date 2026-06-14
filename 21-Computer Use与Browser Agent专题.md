@@ -4,6 +4,14 @@
 
 ---
 
+## 本文职责边界
+
+| 本文负责 | 本文不展开 |
+|---|---|
+| Computer Use / Browser Agent 的观察通道、动作空间、locator、等待验证、安全边界、恢复和评估 | Buddy 产品总体架构见 [25-Buddy型工作台智能体专题.md](./25-Buddy型工作台智能体专题.md)；AI Coding Harness 见 [15-AI Coding Harness最佳实践.md](./15-AI%20Coding%20Harness最佳实践.md)；通用 Runtime 见 [20-Agent Runtime专题.md](./20-Agent%20Runtime专题.md) |
+
+---
+
 ## 一、一句话定义
 
 **Computer Use / Browser Agent 是让模型通过截图、DOM、accessibility tree 或浏览器 API 理解界面状态，并通过点击、输入、滚动、快捷键、导航等动作完成任务的 Agent。**

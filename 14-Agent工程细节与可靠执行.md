@@ -4,6 +4,14 @@
 
 ---
 
+## 本文职责边界
+
+| 本文负责 | 本文不展开 |
+|---|---|
+| 结构化计划、Executor 状态机、完成判定、重试、幂等、异常兜底、长任务恢复等可靠执行模式 | Agent Runtime 总体生命周期和调度层见 [20-Agent Runtime专题.md](./20-Agent%20Runtime专题.md)；工具平台治理见 [23-Tool Gateway与工具平台专题.md](./23-Tool%20Gateway与工具平台专题.md)；停止条件专题见 [16.1-Agent Loop停止条件设计.md](./16.1-Agent%20Loop停止条件设计.md) |
+
+---
+
 ## 一、为什么需要这一层
 
 前面的文档已经覆盖了 Agent 的范式、工具、记忆、RAG、多 Agent、评估和安全。本专题关注更细的工程问题：
@@ -53,7 +61,7 @@ User Goal
 | Tool Contract | 让工具调用可校验、可重试 | schema、timeout、idempotency_key、error_code |
 | Result Contract | 让上游能消费结果 | status、answer、artifacts、confidence、unresolved |
 
-**面试金句**：Plan-and-Execute 的工程关键不是"先计划后执行"，而是把计划变成 typed DAG，把执行变成状态机。
+**核心要点**：Plan-and-Execute 的工程关键不是"先计划后执行"，而是把计划变成 typed DAG，把执行变成状态机。
 
 ### 2.3 推荐状态模型
 
@@ -291,7 +299,7 @@ Verifier 不一定是另一个 LLM。优先级：
 3. **LLM Critic**：完整性、逻辑一致性、事实支持度。
 4. **Human Review**：高风险、低置信、合规场景。
 
-**面试金句**：能用程序验证的地方，不要用 LLM judge；LLM judge 适合开放质量，不适合替代硬约束。
+**核心要点**：能用程序验证的地方，不要用 LLM judge；LLM judge 适合开放质量，不适合替代硬约束。
 
 ---
 
@@ -886,7 +894,7 @@ def run_agent(goal):
 
 ---
 
-## 十四、高频面试题（含答案）
+## 十四、核心问题（含解答）
 
 ### Q1：Plan-and-Execute 中如何保障 plan 阶段结构化输出？
 
@@ -1077,7 +1085,7 @@ Metrics 至少看：
 
 ---
 
-## 十八、面试金句
+## 十八、核心要点
 
 - "Plan-and-Execute 的工程关键是 typed DAG，不是自然语言 todo list。"
 - "Agent 可靠性不是 prompt 能单独解决的问题，要用状态机、schema、checkpoint 和 SRE 手段治理。"

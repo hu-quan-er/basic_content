@@ -4,6 +4,14 @@
 
 ---
 
+## 本文职责边界
+
+| 本文负责 | 本文不展开 |
+|---|---|
+| 多 Agent 的协作拓扑、角色分工、框架总览和“什么时候该用多 Agent”的选型判断 | A2A/互操作协议细节见 [13-A2A与Agent互操作协议.md](./13-A2A与Agent互操作协议.md)；多 Agent 状态模型、handoff、状态同步和端到端代码见 [13.1-多Agent状态管理专题.md](./13.1-多Agent状态管理专题.md) |
+
+---
+
 ## 一、核心概念
 
 ### 1.1 为什么需要多 Agent
@@ -13,7 +21,7 @@
 - **模块化**：单个 Agent 可独立测试 / 替换
 - **专业化模型**：不同 Agent 用不同模型（成本与能力平衡）
 
-### 1.2 反对方观点（也是面试加分点）
+### 1.2 反对方观点（也是重点辨析点）
 **Cognition（Devin 团队）2024 的著名 blog《Don't Build Multi-Agents》**：
 - 多 Agent 沟通带来**上下文割裂**
 - 子 Agent 不知道全局意图，常做错决策
@@ -254,7 +262,7 @@ app = graph.compile(checkpointer=checkpointer)
 
 ---
 
-## 三、高频面试题（含答案）
+## 三、核心问题（含解答）
 
 ### Q1：什么时候用多 Agent 比单 Agent 好？反之呢？
 
@@ -275,7 +283,7 @@ app = graph.compile(checkpointer=checkpointer)
 3. **降低系统复杂度**：少一个 Agent 少一处 bug
 4. **避免上下文割裂**：子 Agent 摘要传递必丢信息
 
-**面试加分**：
+**深入理解**：
 - 引用 Cognition 反对 multi-agent 的观点
 - "Anthropic 在 Building Effective Agents 中也建议先从单 Agent 起步"
 - 提出**演进路径**：单 Agent 验证 → 单 Agent 长 context 优化 → 必要时拆 Agent
@@ -459,7 +467,7 @@ You are in a multi-agent system.
 - LangGraph 仍是工程脚手架
 - 但有时候直接基于 Anthropic / OpenAI SDK 写更可控
 
-**面试加分回答**：
+**深入理解回答**：
 > 框架选型本质是**控制流抽象**的选择 —— 对话驱动（AutoGen）、任务驱动（CrewAI）、状态机驱动（LangGraph）。我会根据业务的本质形态选框架，而不是反过来用框架定义业务。
 
 ---
@@ -727,7 +735,7 @@ app.invoke(None, {"configurable": {"thread_id": "user_123", "checkpoint_id": che
    - 用户可"回退"到任意步骤
    - LangGraph Checkpointer 持久化
 
-**面试加分**：
+**深入理解**：
 - 引用 Cognition 关于"不拆多 Agent"的理由
 - 解释为什么 Cursor / Claude Code 选单 Agent
 - 提到 Anthropic Computer Use 也是单 Agent

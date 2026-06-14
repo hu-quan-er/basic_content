@@ -2,7 +2,15 @@
 
 > 目标：理解为什么需要 Agent 互操作协议、A2A / MCP / ACP 等主流方案的设计差异、何时该用、怎么落地。这是 2025 年 Agent 生态级的关键演进。
 >
-> 补充专题组：多 Agent 下的状态管理、上下文同步、handoff、共享记忆和主流框架实现对比，先读入口 [13.1-多Agent状态管理与上下文同步.md](./13.1-多Agent状态管理与上下文同步.md)，再按需阅读状态模型、A2A handoff、框架实现和生产场景四篇子文档。
+> 补充专题组：多 Agent 下的状态管理、上下文同步、handoff、共享记忆和主流框架实现对比，先读入口 [13.1-多Agent状态管理专题.md](./13.1-多Agent状态管理专题.md)，再按需阅读状态模型、A2A handoff、框架实现、生产场景和端到端代码五篇子文档。
+
+---
+
+## 本文职责边界
+
+| 本文负责 | 本文不展开 |
+|---|---|
+| A2A、MCP、ACP 等互操作协议的动机、对象模型、任务生命周期、跨组织协作和协议选型 | 多 Agent 内部状态模型、Context View、State Patch、handoff 契约和框架实现见 [13.1-多Agent状态管理专题.md](./13.1-多Agent状态管理专题.md)；多 Agent 协作范式入门见 [06-多Agent协作.md](./06-多Agent协作.md) |
 
 ---
 
@@ -427,7 +435,7 @@ A2A 用 JSON-RPC 标准错误码 + 业务错误：
 
 ---
 
-## 六、高频面试题（含答案）
+## 六、核心问题（含解答）
 
 ### Q1：A2A 和 MCP 是什么关系？为什么需要两个协议？
 
@@ -461,7 +469,7 @@ Agent A
   └─ A2A client → remote Agent B (B 内部也用 MCP)
 ```
 
-**面试加分**：提到 Anthropic 和 Google 在协议设计上明确**互补定位**，没有竞争关系。
+**深入理解**：提到 Anthropic 和 Google 在协议设计上明确**互补定位**，没有竞争关系。
 
 ---
 
@@ -541,7 +549,7 @@ https://your-agent.com/.well-known/agent.json
 - 按能力 search（用 LLM 语义匹配）
 - 信任评分（评估 Agent 可靠性）
 
-**面试加分**：
+**深入理解**：
 - 提到这与 MCP 不同（MCP 一般是本地启动或显式配置）
 - 提到 Agent Card 既是"能力公告"也是"合同"
 - 提到当前生态早期（无注册中心，但有公开 Agent 目录如 a2aprotocol.ai）
@@ -600,7 +608,7 @@ https://your-agent.com/.well-known/agent.json
 - 防止 IP 泄露
 - 减少注入传染面（B 不能直接污染 A 的 system prompt）
 
-**面试加分**：
+**深入理解**：
 - 把 A2A 风险类比成 **API 互信任风险**（已有成熟工程实践可借鉴）
 - 提到 OAuth + Trace + 业务合同 三件套
 - 提到 prompt injection 跨 Agent 是新风险，业界还在探索
@@ -639,7 +647,7 @@ https://your-agent.com/.well-known/agent.json
 - 成熟：抽出 A2A endpoint，对外开放
 - 这两个**可以共存**（内部 API + 公开 A2A 双层）
 
-**面试加分**：
+**深入理解**：
 - A2A 不是银弹，仍处早期
 - 但**协议化是必然趋势**，类比 REST / GraphQL 当年的普及
 - 强调"先用最简方案，需要互操作时再升 A2A"
@@ -766,7 +774,7 @@ client → 注册 webhook → POST tasks/send  →（client 断开）
 - IBM 自己也是 A2A 联盟成员 → 两个协议长期可能融合
 - 标准化运动 AGNTCY 推更高层抽象
 
-**面试加分**：
+**深入理解**：
 - 历史类比："REST vs SOAP" 当年也并存几年，最后 REST 赢
 - 强调**协议战的胜者不只看技术，看生态联盟**
 - A2A 联盟里有 Google 加 50 多家，碾压性优势
@@ -813,7 +821,7 @@ client → 注册 webhook → POST tasks/send  →（client 断开）
 - 自家两个 Agent 共享 Redis、共享 DB → 性能好但耦合死
 - 但这就**不算 A2A 协作**了，是单一系统两个进程
 
-**面试加分**：
+**深入理解**：
 - 这种 "opaque" 设计是协议的核心哲学
 - 类比 REST 的 "服务边界封装" 思想
 - 提到设计权衡：松耦合 + 安全 ↔ 性能 + 共享便利
@@ -856,7 +864,7 @@ client → 注册 webhook → POST tasks/send  →（client 断开）
 - 但厂商有动机做**部分互操作**而非完全开放
 - 关键节点是消费级 Personal AI 出现后用户的呼声
 
-**面试加分**：
+**深入理解**：
 - 历史类比："Email 协议（SMTP）让所有邮箱互通"
 - 类比 RCS / iMessage（厂商抵制互操作的反例）
 - **生态学视角**：标准化通常先在中间层（B2B）形成，再向消费级渗透
@@ -1027,7 +1035,7 @@ POST /a2a {tasks/sendSubscribe}
 - 商业利益：服务方愿意让 personal AI 接入吗（绕过推广）？
 - 这正是 2025-2026 的看点
 
-**面试加分**：
+**深入理解**：
 - 提到 "Personal AI" 是 Sam Altman、Mustafa Suleyman 都谈过的未来方向
 - 提到 A2A 是这种愿景的关键基础设施
 - 提到当前痛点：服务方不愿被中介化（类比 OTA / 携程 时代的酒店）
@@ -1089,7 +1097,7 @@ POST /a2a {tasks/sendSubscribe}
 
 ---
 
-## 十一、面试金句
+## 十一、核心要点
 
 - "MCP 是 Agent 的手，A2A 是 Agent 的嘴 — 两者互补不替代"
 - "A2A 的核心抽象是 Task（有生命周期），不是 RPC"

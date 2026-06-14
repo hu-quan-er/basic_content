@@ -371,7 +371,7 @@ response.choices[0].message.content  # 答案
 
 ---
 
-## 三、高频面试题（含答案）
+## 三、核心问题（含解答）
 
 ### Q1：Reasoning Model 和传统 CoT 的本质区别？
 
@@ -403,7 +403,7 @@ response.choices[0].message.content  # 答案
 - DeepSeek R1 论文展示了"Aha moment"：模型自己学会反思
 - 这不是 prompt 工程能造出的
 
-**面试加分**：
+**深入理解**：
 - 提到 RLVR 是核心新东西
 - 提到 inference scaling laws
 - 引用 R1-Zero 证明"纯 RL 也能涌现推理"
@@ -439,7 +439,7 @@ response.choices[0].message.content  # 答案
 - 创意 / 写作 / 主观任务仍需 RLHF
 - 实际工程：reasoning model 通常 **RLVR + RLHF 组合**
 
-**面试加分**：
+**深入理解**：
 - 提到 DeepSeek R1 / R1-Zero 是 RLVR 代表
 - 提到 GRPO 算法（DeepSeek 提出）
 - 区分 ORM vs PRM
@@ -484,7 +484,7 @@ response.choices[0].message.content  # 答案
 2. **拒绝采样自蒸馏**：模型自己生成高质量数据自己学
 3. **多阶段交替 SFT + RL**：稳健 + 通用
 
-**面试加分**：
+**深入理解**：
 - 能说出 R1-Zero 的意义（证明纯 RL 可行）
 - 能区分 R1 与 R1-Zero
 - 提到这是开源社区 reasoning model 工程的标准范式
@@ -531,7 +531,7 @@ response.choices[0].message.content  # 答案
 - 但有边际递减
 - 上限：模型能力本身的边界
 
-**面试加分**：
+**深入理解**：
 - 提到这是 LLM scaling 的"第二维度"
 - 提到 trade-off（更高准确率 vs 延迟 / 成本）
 - 提到 reasoning model 的核心创新就是把 test-time scaling 内化到模型本身
@@ -573,7 +573,7 @@ response.choices[0].message.content  # 答案
 > 是 → 用 reasoning model
 > 否 → 普通 LLM 更经济
 
-**面试加分**：
+**深入理解**：
 - 不要把 reasoning model 当万灵药
 - 强调架构中的角色分工
 - 提到延迟问题（用户体验）
@@ -617,7 +617,7 @@ response.choices[0].message.content  # 答案
 - Visible thinking 能让用户发现模型的 "anti-pattern"（例：辱骂用户但最终礼貌输出）
 - 这是 Anthropic 选 visible 的一个动机
 
-**面试加分**：
+**深入理解**：
 - 知道两派的取舍
 - 提到 Anthropic 的 alignment 角度
 - 提到工程上 thinking trace 别污染下轮 context
@@ -979,7 +979,7 @@ Sonnet 完成 change → Reasoning Model review → 标记问题
 
 ---
 
-## 八、面试金句
+## 八、核心要点
 
 - "Reasoning model 把 test-time compute 内化到模型本身"
 - "RLVR 跳过了 reward model 这一可被 hack 的环节"

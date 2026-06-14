@@ -21,6 +21,7 @@
 
 | # | 主题 | 重点 | 文件 |
 |---|------|------|------|
+| 0 | 内容职责与迁移清单 | 全局文件职责边界、重复内容收敛规则、主题簇主责文件、后续写作规则 | [00-内容职责与迁移清单.md](./00-内容职责与迁移清单.md) |
 | 1 | LLM 基础与 Agent 本质 | Token、采样、训练阶段、Function Calling、Agent 定义、Workflow vs Agent | [01-LLM基础与Agent本质.md](./01-LLM基础与Agent本质.md) |
 | 1.1 | └ Transformer 架构与模型原理（子文档） | Transformer block、Q/K/V、encoder/decoder 分叉、decoder-only、Scaling Laws、MoE、SSM/Mamba、架构演进 | [01.1-Transformer架构与模型原理.md](./01.1-Transformer架构与模型原理.md) |
 | 2 | Prompt 工程与推理范式 | CoT、ReAct、Plan-Execute、Reflexion、ToT、结构化输出 | [02-Prompt工程与推理范式.md](./02-Prompt工程与推理范式.md) |
@@ -39,29 +40,51 @@
 | 11 | Voice / Realtime Agent（进阶） | Pipeline vs E2E、延迟治理、Barge-in、电话客服、英语口语 | [11-Voice与Realtime Agent.md](./11-Voice与Realtime%20Agent.md) |
 | 12 | Reasoning Models 专题（进阶） | o1/R1/Claude Thinking、RLVR、GRPO、test-time compute、Agent 中的角色 | [12-Reasoning Models专题.md](./12-Reasoning%20Models专题.md) |
 | 13 | A2A 与 Agent 互操作协议（进阶） | A2A/MCP/ACP、Agent Card、Task 生命周期、跨组织协作 | [13-A2A与Agent互操作协议.md](./13-A2A与Agent互操作协议.md) |
-| 13.1 | └ 多 Agent 状态管理与上下文同步（专题入口） | 阅读路径、核心概念、A2A 边界、框架选型、术语索引 | [13.1-多Agent状态管理与上下文同步.md](./13.1-多Agent状态管理与上下文同步.md) |
-| 13.1.1 | └ 状态模型与读写契约 | State Catalog、Context View、State Patch、字段级权限、一致性、Reducer、存储边界 | [13.1.1-多Agent状态模型与读写契约.md](./13.1.1-多Agent状态模型与读写契约.md) |
-| 13.1.2 | └ A2A 上下文同步与 Handoff 设计 | A2A Context Envelope、Task 映射、多轮同步、Handoff Contract、跨组织边界 | [13.1.2-A2A上下文同步与Handoff设计.md](./13.1.2-A2A上下文同步与Handoff设计.md) |
-| 13.1.3 | └ 主流多 Agent 框架状态管理实现 | A2A、LangGraph、AutoGen、CrewAI、OpenAI Agents SDK、Google ADK、LlamaIndex、Semantic Kernel、MCP | [13.1.3-主流多Agent框架状态管理实现.md](./13.1.3-主流多Agent框架状态管理实现.md) |
-| 13.1.4 | └ 多 Agent 生产场景与治理清单 | 企业入职、Deep Research、代码 Agent、客服、供应商尽调、可观测、安全、反模式 | [13.1.4-多Agent生产场景与治理清单.md](./13.1.4-多Agent生产场景与治理清单.md) |
-| 13.1.5 | └ 多 Agent 状态同步端到端代码示例 | 可运行 Python 示例、StateStore、Context View、Patch 校验、Artifact、Event Log、A2A input-required、远程结果导入 | [13.1.5-多Agent状态同步端到端代码示例.md](./13.1.5-多Agent状态同步端到端代码示例.md) |
+| 13.1 | └ 多 Agent 状态管理专题 | 状态模型、A2A handoff、框架实现、生产场景、端到端示例 | [13.1-多Agent状态管理专题](./13.1-多Agent状态管理专题.md) |
 | 14 | Agent 工程细节与可靠执行（进阶） | 结构化计划、Executor 状态机、子 Agent 完成保障、异常兜底、幂等恢复 | [14-Agent工程细节与可靠执行.md](./14-Agent工程细节与可靠执行.md) |
 | 15 | AI Coding Harness 最佳实践（进阶） | AGENTS.md/CLAUDE.md、任务包、验证脚本、进度文件、权限与 hooks | [15-AI Coding Harness最佳实践.md](./15-AI%20Coding%20Harness最佳实践.md) |
-| 16 | Agent Loop 专题（进阶） | 单次迭代解剖、终止条件、上下文压缩、范式对 loop 的改造、死循环检测、框架 loop 对比（含 Go/eino 实现） | [16-Agent Loop专题.md](./16-Agent%20Loop专题.md) |
-| 16.1 | └ Agent Loop 停止条件设计（子文档） | 五个停止维度、完成信号陷阱、死循环检测、主流产品停止机制对照、收尾策略（Python + Go/eino） | [16.1-Agent Loop停止条件设计.md](./16.1-Agent%20Loop停止条件设计.md) |
-| 16.2 | └ Agent Loop 上下文管理（子文档） | 五种控制策略详解、组合 pipeline、LangChain/LangGraph/LlamaIndex/Claude/OpenAI/MemGPT/Mem0 对比分析 | [16.2-Agent Loop上下文管理.md](./16.2-Agent%20Loop上下文管理.md) |
-| 16.3 | └ Agent Loop 人在回路（子文档） | HITL 六种模式、自治光谱、触发策略、暂停-持久化-恢复、LangGraph/Claude/AutoGen/CrewAI/HumanLayer/Temporal 对比 | [16.3-Agent Loop人在回路.md](./16.3-Agent%20Loop人在回路.md) |
+| 16 | Agent Loop 专题（进阶） | 单次迭代解剖、停止条件、上下文管理、人在回路、框架 loop 对比 | [16-Agent Loop专题](./16-Agent%20Loop专题.md) |
 | 17 | 上下文窗口的模型原理（进阶） | 自注意力 O(n²)、KV Cache、位置编码与外推、Lost in the Middle、长上下文架构方向 | [17-上下文窗口的模型原理.md](./17-上下文窗口的模型原理.md) |
 | 18 | 模型固有局限与工程兜底（进阶） | 19 类原理性局限的全景表、七种通用兜底模式、模型缺陷与系统设计的对应 | [18-模型固有局限与工程兜底.md](./18-模型固有局限与工程兜底.md) |
 | 19 | 推理加速底层系统（进阶） | prefill/decode、Roofline、KV Cache、PagedAttention、RadixAttention、FlashAttention、continuous batching、speculative decoding、量化、P/D disaggregation | [19-推理加速底层系统.md](./19-推理加速底层系统.md) |
 | 19.1 | └ Agent 推理加速落地（子文档） | Agent 延迟拆解、少调用少 token、工具并行、模型分层、上下文压缩、多层缓存、结构化输出、可观测优化闭环 | [19.1-Agent推理加速落地.md](./19.1-Agent推理加速落地.md) |
-| 20 | Agent Runtime 专题（进阶） | Run 生命周期、Agent Loop、调度器、状态/检查点、工具网关、HITL、handoff、可观测、durable execution | [20-Agent Runtime专题.md](./20-Agent%20Runtime专题.md) |
-| 20.1 | └ Agent Runtime 完整实现（子文档） | 可运行 Python runtime、RunState、ToolGateway、Policy/HITL、Checkpoint、Resume、Event Log | [20.1-Agent Runtime完整实现.md](./20.1-Agent%20Runtime完整实现.md) |
-| 20.2 | └ 主流 Agent Runtime 实现对比（子文档） | LangGraph、OpenAI Agents SDK、Google ADK、AutoGen、CrewAI、LlamaIndex、Semantic Kernel、Letta、Temporal | [20.2-主流Agent Runtime实现对比.md](./20.2-主流Agent%20Runtime实现对比.md) |
+| 20 | Agent Runtime 专题（进阶） | Run 生命周期、调度器、状态/检查点、HITL、handoff、完整实现、主流实现对比 | [20-Agent Runtime专题](./20-Agent%20Runtime专题.md) |
 | 21 | Computer Use 与 Browser Agent 专题（进阶） | screenshot/DOM/accessibility tree、动作空间、locator、等待验证、HITL、安全边界、WebArena/OSWorld 评估 | [21-Computer Use与Browser Agent专题.md](./21-Computer%20Use与Browser%20Agent专题.md) |
 | 22 | 结构化输出与约束解码专题（进阶） | JSON mode、JSON Schema、tool args schema、CFG/FSM grammar、validator、repair loop、schema versioning、性能成本 | [22-结构化输出与约束解码专题.md](./22-结构化输出与约束解码专题.md) |
 | 23 | Tool Gateway 与工具平台专题（进阶） | 工具注册、Tool Retrieval、OpenAPI/MCP 接入、权限过滤、幂等、错误码、沙箱、审计、工具测试 | [23-Tool Gateway与工具平台专题.md](./23-Tool%20Gateway与工具平台专题.md) |
 | 24 | Agent Eval Harness 专题（进阶） | golden set、failure pool、trace replay、rule evaluator、LLM judge 校准、CI gate、线上采样、eval report | [24-Agent Eval Harness专题.md](./24-Agent%20Eval%20Harness专题.md) |
+| 25 | Buddy 型工作台智能体专题（进阶） | WorkBuddy、CodeBuddy、Qoder 类产品谱系、架构分层、上下文工程、工具集成、安全治理、评估体系 | [25-Buddy型工作台智能体专题](./25-Buddy型工作台智能体专题.md) |
+
+---
+
+## 目录组织规则
+
+当前所有 Markdown 学习文档都打平放在根目录，不再使用专题子文件夹。
+
+| 类型 | 命名方式 | 说明 |
+|------|----------|------|
+| 元文档 | `00-主题.md` | 全局目录、职责边界、迁移清单和写作规则 |
+| 主线文档 | `NN-主题.md` | 按学习顺序阅读的核心主题 |
+| 主线子文档 | `NN.x-主题.md` | 紧贴主线主题的补充内容 |
+| 专题入口 | `NN-主题专题.md` | 一个专题的总览和阅读路径 |
+| 专题子文档 | `NN.x-子主题.md` | 专题内部按小数编号排序 |
+
+写作和整理优先级：
+
+1. 先查 [00-内容职责与迁移清单.md](./00-内容职责与迁移清单.md)，确认新增内容的主负责文件。
+2. 如果概念已经有主负责文件，其他文件只保留摘要和链接。
+3. 专题入口负责阅读路径和问题地图，不重复子文档长篇细节。
+4. 代码示例、产品案例、资料引用如果服务于不同目标，可以保留局部重复，但要说明用途。
+5. 文档定位为系统学习资料，不使用招聘或应试化语境。
+
+例如：
+
+| 专题入口 | 子文档 |
+|----------|--------|
+| [13.1-多Agent状态管理专题.md](./13.1-多Agent状态管理专题.md) | `13.1.1` 到 `13.1.5` |
+| [16-Agent Loop专题.md](./16-Agent%20Loop专题.md) | `16.1` 到 `16.3` |
+| [20-Agent Runtime专题.md](./20-Agent%20Runtime专题.md) | `20.1` 到 `20.2` |
+| [25-Buddy型工作台智能体专题.md](./25-Buddy型工作台智能体专题.md) | `25.1` 到 `25.6` |
 
 ---
 
@@ -99,6 +122,7 @@
 
 | 主题 | 关键点 |
 |------|--------|
+| 内容职责 | 一个概念一个主负责文件；非主责文件保留摘要和链接；迁移记录见 `00` |
 | 基础 | Token/采样/训练阶段；Agent 定义；Workflow vs Agent；Function Calling 底层 |
 | Transformer 架构 | Attention/FFN/residual；encoder-only vs decoder-only；RoPE/ALiBi；MoE；SSM/Mamba；Scaling Laws |
 | 推理 | ReAct vs Plan-Execute；CoT 涌现；Reflexion |
@@ -126,11 +150,13 @@
 | 结构化输出 | JSON Mode；JSON Schema；Tool Args Schema；Final Output Schema；Constrained Decoding；Validator；Repair Loop；Schema Version |
 | Tool Gateway | Tool Registry；Tool Retrieval；Permission Filter；Policy Engine；Risk Scoring；Idempotency；Sandbox；Audit；Tool Eval |
 | Agent Eval Harness | Golden Set；Regression Set；Trace Replay；Rule Evaluator；LLM Judge Calibration；CI Gate；Failure Pool；Shadow Eval |
+| Buddy 工作台智能体 | WorkBuddy；CodeBuddy；Qoder；Task Contract；Context Manifest；Agent Runtime；Tool Gateway；HITL；Office Agent；Coding Agent；任务成功率 |
 
 ---
 
 ## 进度跟踪
 
+- [ ] 内容职责与迁移清单
 - [ ] LLM 基础与 Agent 本质
 - [ ] Transformer 架构与模型原理
 - [ ] Prompt 工程与推理范式
@@ -149,12 +175,7 @@
 - [ ] Voice / Realtime Agent（进阶专题）
 - [ ] Reasoning Models（进阶专题）
 - [ ] A2A 与 Agent 互操作协议（进阶专题）
-- [ ] 多 Agent 状态管理与上下文同步（进阶专题）
-- [ ] 多 Agent 状态模型与读写契约
-- [ ] A2A 上下文同步与 Handoff 设计
-- [ ] 主流多 Agent 框架状态管理实现
-- [ ] 多 Agent 生产场景与治理清单
-- [ ] 多 Agent 状态同步端到端代码示例
+- [ ] 多 Agent 状态管理专题（进阶专题）
 - [ ] Agent 工程细节与可靠执行（进阶专题）
 - [ ] AI Coding Harness 最佳实践（进阶专题）
 - [ ] Agent Loop 专题（进阶专题）
@@ -163,12 +184,11 @@
 - [ ] 推理加速底层系统（进阶专题）
 - [ ] Agent 推理加速落地（进阶专题）
 - [ ] Agent Runtime 专题（进阶专题）
-- [ ] Agent Runtime 完整实现（进阶专题）
-- [ ] 主流 Agent Runtime 实现对比（进阶专题）
 - [ ] Computer Use 与 Browser Agent（进阶专题）
 - [ ] 结构化输出与约束解码（进阶专题）
 - [ ] Tool Gateway 与工具平台（进阶专题）
 - [ ] Agent Eval Harness（进阶专题）
+- [ ] Buddy 型工作台智能体（进阶专题）
 
 ---
 

@@ -4,6 +4,14 @@
 
 ---
 
+## 本文职责边界
+
+| 本文负责 | 本文不展开 |
+|---|---|
+| AI Coding/Coding Agent 的任务包、项目规则、验证脚本、进度文件、权限 hooks、review checklist 和长任务恢复 | Buddy 型产品谱系和工作台架构见 [25-Buddy型工作台智能体专题.md](./25-Buddy型工作台智能体专题.md)；Browser/Computer Use 见 [21-Computer Use与Browser Agent专题.md](./21-Computer%20Use与Browser%20Agent专题.md)；通用 Runtime 见 [20-Agent Runtime专题.md](./20-Agent%20Runtime专题.md) |
+
+---
+
 ## 一、什么是 Harness Coding
 
 Harness Coding 可以理解为：给 AI Coding Agent 准备一套“可执行工作环境”和“工程约束系统”，让它在明确边界内完成开发任务。
@@ -37,7 +45,7 @@ AI Coding 和普通问答不同，它会影响真实代码库，有明显副作�
 | 破坏性操作 | 删除文件、改配置、推送分支 | permissions / hooks / HITL |
 | 错误完成 | 未验证就说完成 | 验证清单和证据格式 |
 
-**面试金句**：AI Coding 的生产力上限不只取决于模型，而取决于代码库有没有为 AI 提供可发现的上下文和可执行的验证路径。
+**核心要点**：AI Coding 的生产力上限不只取决于模型，而取决于代码库有没有为 AI 提供可发现的上下文和可执行的验证路径。
 
 ---
 
@@ -959,7 +967,7 @@ pnpm test
 
 ---
 
-## 十、面试题与回答
+## 十、核心问题与回答
 
 ### Q1：什么是 AI Coding Harness？
 
@@ -1074,7 +1082,7 @@ AI Coding Harness 是为 coding agent 准备的一套工程脚手架，包括项
 
 ---
 
-## 十四、面试金句
+## 十四、核心要点
 
 - "AI Coding Harness 的核心是把隐性工程知识变成仓库内可执行的规则、脚本和检查点。"
 - "好的 harness 让 AI 少猜项目怎么跑，多用测试证明它真的完成。"

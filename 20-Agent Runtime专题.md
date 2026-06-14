@@ -4,6 +4,14 @@
 
 ---
 
+## 本文职责边界
+
+| 本文负责 | 本文不展开 |
+|---|---|
+| Agent Runtime 的 Run/Step 生命周期、调度、状态、checkpoint、HITL、handoff、event log、trace 和恢复机制 | 最小完整代码实现见 [20.1-Agent Runtime完整实现.md](./20.1-Agent%20Runtime完整实现.md)；主流框架对比见 [20.2-Agent Runtime主流实现对比.md](./20.2-Agent%20Runtime主流实现对比.md)；Agent Loop 内部细节见 [16-Agent Loop专题.md](./16-Agent%20Loop专题.md)；可靠执行模式见 [14-Agent工程细节与可靠执行.md](./14-Agent工程细节与可靠执行.md) |
+
+---
+
 ## 一、一句话定义
 
 **Agent Runtime 是 Agent 的运行时控制层**：它接收一个用户任务，创建 `Run`，按步骤驱动模型推理、工具调用、上下文组装、状态持久化、预算控制、人工介入、handoff、追踪与恢复，直到任务完成、失败、暂停或取消。
@@ -181,7 +189,7 @@ Context =
 | 历史太长怎么办？ | 滑动窗口、摘要、artifact 引用、state manifest |
 | 多 Agent 怎么传上下文？ | contract + context envelope + artifact ref |
 
-这部分可以和 [04.2-Agent上下文工程.md](./04.2-Agent上下文工程.md) 联读。
+本节只说明 Context Builder 在 Runtime 中的位置。单次上下文收集、过滤、预算、渲染和 Context Manifest 的完整方法见 [04.2-Agent上下文工程.md](./04.2-Agent上下文工程.md)。
 
 ### 4.4 Model Adapter
 
@@ -226,7 +234,7 @@ Tool Gateway 至少负责：
 | 结果裁剪 | 大结果转 artifact，只把摘要放回上下文 |
 | 审计 | 记录谁在什么上下文下触发了什么动作 |
 
-详细工具工程可以联读 [03-工具调用.md](./03-工具调用.md) 与 [14-Agent工程细节与可靠执行.md](./14-Agent工程细节与可靠执行.md)。
+这里保留 Runtime 调用工具时的接口视角。Function Calling 基础见 [03-工具调用.md](./03-工具调用.md)，可靠执行见 [14-Agent工程细节与可靠执行.md](./14-Agent工程细节与可靠执行.md)，Tool Gateway 作为独立平台的完整治理体系见 [23-Tool Gateway与工具平台专题.md](./23-Tool%20Gateway与工具平台专题.md)。
 
 ### 4.6 State Store 与 Checkpoint
 
@@ -296,7 +304,7 @@ running
 | 结果如何合并 | state patch、artifact import、conflict resolution |
 | 失败怎么处理 | retry、fallback agent、转人工 |
 
-这一块可以联读 [13.1-多Agent状态管理与上下文同步.md](./13.1-多Agent状态管理与上下文同步.md)。
+这一块可以联读 [13.1-多Agent状态管理专题.md](./13.1-多Agent状态管理专题.md)。
 
 ### 4.9 Streaming 与 UI 事件
 
@@ -607,7 +615,7 @@ Durable Execution 底座:
 | 需要长期记忆 Agent | Letta/MemGPT 类 runtime |
 | 需要严格工程可靠性 | Workflow engine + 自研 runtime contract |
 
-详细对比见 [20.2-主流Agent Runtime实现对比.md](./20.2-主流Agent%20Runtime实现对比.md)。
+详细对比见 [20.2-Agent Runtime主流实现对比.md](./20.2-Agent%20Runtime主流实现对比.md)。
 
 ---
 
@@ -620,7 +628,7 @@ Durable Execution 底座:
 3. 回看 [16-Agent Loop专题.md](./16-Agent%20Loop专题.md)，理解 runtime 内部的 loop。
 4. 回看 [14-Agent工程细节与可靠执行.md](./14-Agent工程细节与可靠执行.md)，理解可靠执行细节。
 5. 回看 [04.1-生产级Agent记忆工程.md](./04.1-生产级Agent记忆工程.md) 与 [04.2-Agent上下文工程.md](./04.2-Agent上下文工程.md)，理解 runtime 如何管理 memory/context。
-6. 读 [20.2-主流Agent Runtime实现对比.md](./20.2-主流Agent%20Runtime实现对比.md)，理解主流框架分别把 runtime 做到了哪里。
+6. 读 [20.2-Agent Runtime主流实现对比.md](./20.2-Agent%20Runtime主流实现对比.md)，理解主流框架分别把 runtime 做到了哪里。
 
 ---
 

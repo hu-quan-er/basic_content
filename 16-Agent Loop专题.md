@@ -4,6 +4,14 @@
 
 ---
 
+## 本文职责边界
+
+| 本文负责 | 本文不展开 |
+|---|---|
+| Agent Loop 的入口总览、单轮结构、loop 类型、框架 loop 对比，以及停止/上下文/HITL 的阅读路径 | 停止条件细节见 [16.1-Agent Loop停止条件设计.md](./16.1-Agent%20Loop停止条件设计.md)；多轮上下文增长治理见 [16.2-Agent Loop上下文管理.md](./16.2-Agent%20Loop上下文管理.md)；人在回路见 [16.3-Agent Loop人在回路.md](./16.3-Agent%20Loop人在回路.md)；生产 Runtime 见 [20-Agent Runtime专题.md](./20-Agent%20Runtime专题.md) |
+
+---
+
 ## 一、为什么要单独深挖 Agent Loop
 
 前面 《LLM基础与Agent本质》~《AI Coding Harness最佳实践》 把范式、工具、记忆、RAG、多 Agent、评估、安全、可靠执行都覆盖了，但有一个被反复提到、却从没单独拆开的东西：**agent loop（智能体循环 / agentic loop）**。
