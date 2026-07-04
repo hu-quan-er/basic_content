@@ -8,7 +8,7 @@
 
 | 本文负责 | 本文不展开 |
 |---|---|
-| AI Coding/Coding Agent 的任务包、项目规则、验证脚本、进度文件、权限 hooks、review checklist 和长任务恢复 | Buddy 型产品谱系和工作台架构见 [25-Buddy型工作台智能体专题.md](./25-Buddy型工作台智能体专题.md)；Browser/Computer Use 见 [21-Computer Use与Browser Agent专题.md](./21-Computer%20Use与Browser%20Agent专题.md)；通用 Runtime 见 [20-Agent Runtime专题.md](./20-Agent%20Runtime专题.md) |
+| AI Coding/Coding Agent 的任务包、项目规则、验证脚本、进度文件、权限 hooks、review checklist 和长任务恢复 | 编码 harness 的安全架构（沙箱/审批/信任、Codex/Claude Code 安全模型）见 [15.1-Coding Harness安全模型.md](./15.1-Coding%20Harness安全模型.md)；Buddy 型产品谱系和工作台架构见 [25-Buddy型工作台智能体专题.md](./25-Buddy型工作台智能体专题.md)；Browser/Computer Use 见 [21-Computer Use与Browser Agent专题.md](./21-Computer%20Use与Browser%20Agent专题.md)；通用 Runtime 见 [20-Agent Runtime专题.md](./20-Agent%20Runtime专题.md) |
 
 ---
 
@@ -521,6 +521,8 @@ Hooks 可用于：
 - 记录工具调用日志。
 
 这类机制的核心是：安全不能只靠 prompt，必须有工具层硬约束。
+
+> 本节是权限的工作流视角。编码 harness 完整的安全架构——沙箱（Seatbelt/Landlock 等 OS 隔离）× 审批策略 × 信任边界、Codex 与 Claude Code 安全模型对比、提示注入与 lethal trifecta 防护、网络出口控制、自建 harness 安全蓝图——见 [15.1-Coding Harness安全模型.md](./15.1-Coding%20Harness安全模型.md)。
 
 ### 4.9 Context Index：让 AI 快速找到上下文
 

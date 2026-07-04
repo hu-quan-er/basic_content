@@ -37,18 +37,18 @@
 | 8.1 | └ 生产级 Agent 应用工程（子文档） | 业务边界、架构分层、状态机、工具网关、安全治理、HITL、评估、可观测、发布运维、成熟度模型 | [08.1-生产级Agent应用工程.md](./08.1-生产级Agent应用工程.md) |
 | 9 | 安全与对齐 | Prompt Injection、Jailbreak、HITL、权限隔离、Guardrails | [09-安全与对齐.md](./09-安全与对齐.md) |
 | 10 | 综合系统设计 | Code Agent / Deep Research / GUI Agent / 企业知识问答 | [10-综合系统设计.md](./10-综合系统设计.md) |
-| 11 | Voice / Realtime Agent（进阶） | Pipeline vs E2E、延迟治理、Barge-in、电话客服、英语口语 | [11-Voice与Realtime Agent.md](./11-Voice与Realtime%20Agent.md) |
+| 11 | Voice / Realtime Agent（进阶） | Pipeline vs E2E、延迟治理、Barge-in、电话客服、英语口语、实时性能与预测式执行（11.1：prequery/模型续写） | [11-Voice与Realtime Agent.md](./11-Voice与Realtime%20Agent.md) |
 | 12 | Reasoning Models 专题（进阶） | o1/R1/Claude Thinking、RLVR、GRPO、test-time compute、Agent 中的角色 | [12-Reasoning Models专题.md](./12-Reasoning%20Models专题.md) |
 | 13 | A2A 与 Agent 互操作协议（进阶） | A2A/MCP/ACP、Agent Card、Task 生命周期、跨组织协作 | [13-A2A与Agent互操作协议.md](./13-A2A与Agent互操作协议.md) |
 | 13.1 | └ 多 Agent 状态管理专题 | 状态模型、A2A handoff、框架实现、生产场景、端到端示例 | [13.1-多Agent状态管理专题](./13.1-多Agent状态管理专题.md) |
 | 14 | Agent 工程细节与可靠执行（进阶） | 结构化计划、Executor 状态机、子 Agent 完成保障、异常兜底、幂等恢复 | [14-Agent工程细节与可靠执行.md](./14-Agent工程细节与可靠执行.md) |
-| 15 | AI Coding Harness 最佳实践（进阶） | AGENTS.md/CLAUDE.md、任务包、验证脚本、进度文件、权限与 hooks | [15-AI Coding Harness最佳实践.md](./15-AI%20Coding%20Harness最佳实践.md) |
+| 15 | AI Coding Harness 最佳实践（进阶） | AGENTS.md/CLAUDE.md、任务包、验证脚本、进度文件、权限与 hooks、安全模型（15.1：沙箱/审批/信任、Codex/Claude Code） | [15-AI Coding Harness最佳实践.md](./15-AI%20Coding%20Harness最佳实践.md) |
 | 16 | Agent Loop 专题（进阶） | 单次迭代解剖、停止条件、上下文管理、人在回路、框架 loop 对比 | [16-Agent Loop专题](./16-Agent%20Loop专题.md) |
 | 17 | 上下文窗口的模型原理（进阶） | 自注意力 O(n²)、KV Cache、位置编码与外推、Lost in the Middle、长上下文架构方向 | [17-上下文窗口的模型原理.md](./17-上下文窗口的模型原理.md) |
 | 18 | 模型固有局限与工程兜底（进阶） | 19 类原理性局限的全景表、七种通用兜底模式、模型缺陷与系统设计的对应 | [18-模型固有局限与工程兜底.md](./18-模型固有局限与工程兜底.md) |
 | 19 | 推理加速底层系统（进阶） | prefill/decode、Roofline、KV Cache、PagedAttention、RadixAttention、FlashAttention、continuous batching、speculative decoding、量化、P/D disaggregation | [19-推理加速底层系统.md](./19-推理加速底层系统.md) |
 | 19.1 | └ Agent 推理加速落地（子文档） | Agent 延迟拆解、少调用少 token、工具并行、模型分层、上下文压缩、多层缓存、结构化输出、可观测优化闭环 | [19.1-Agent推理加速落地.md](./19.1-Agent推理加速落地.md) |
-| 20 | Agent Runtime 专题（进阶） | Run 生命周期、调度器、状态/检查点、HITL、handoff、完整实现、主流实现对比 | [20-Agent Runtime专题](./20-Agent%20Runtime专题.md) |
+| 20 | Agent Runtime 专题（进阶） | Run 生命周期、调度器、状态/检查点、HITL、handoff、完整实现、主流实现对比、平台鉴权体系（20.3） | [20-Agent Runtime专题](./20-Agent%20Runtime专题.md) |
 | 21 | Computer Use 与 Browser Agent 专题（进阶） | screenshot/DOM/accessibility tree、动作空间、locator、等待验证、HITL、安全边界、WebArena/OSWorld 评估 | [21-Computer Use与Browser Agent专题.md](./21-Computer%20Use与Browser%20Agent专题.md) |
 | 22 | 结构化输出与约束解码专题（进阶） | JSON mode、JSON Schema、tool args schema、CFG/FSM grammar、validator、repair loop、schema versioning、性能成本 | [22-结构化输出与约束解码专题.md](./22-结构化输出与约束解码专题.md) |
 | 23 | Tool Gateway 与工具平台专题（进阶） | 工具注册、Tool Retrieval、OpenAPI/MCP 接入、权限过滤、幂等、错误码、沙箱、审计、工具测试 | [23-Tool Gateway与工具平台专题.md](./23-Tool%20Gateway与工具平台专题.md) |
@@ -56,6 +56,7 @@
 | 25 | Buddy 型工作台智能体专题（进阶） | WorkBuddy、CodeBuddy、Qoder 类产品谱系、架构分层、上下文工程、工具集成、安全治理、评估体系 | [25-Buddy型工作台智能体专题](./25-Buddy型工作台智能体专题.md) |
 | 26 | Model Gateway 与模型治理专题（进阶） | 模型接入、模型注册、路由、fallback、预算、缓存、版本发布、观测、治理 | [26-Model Gateway与模型治理专题.md](./26-Model%20Gateway与模型治理专题.md) |
 | 27 | Agent 安全生命周期专题（进阶） | 全生命周期威胁建模、输入/上下文/模型/工具/执行/记忆/输出安全、防护实现、安全测试、事故响应 | [27-Agent安全生命周期专题.md](./27-Agent安全生命周期专题.md) |
+| 28 | Agent Skills 与能力封装专题（进阶） | Skill 定义、渐进式披露三层加载、SKILL.md 结构、Skill vs Tool/MCP/Prompt/Subagent、设计原则、主流实现、能力封装治理 | [28-Agent Skills与能力封装.md](./28-Agent%20Skills与能力封装.md) |
 
 ---
 
@@ -142,12 +143,15 @@
 | 安全 | Prompt Injection；HITL；权限隔离 |
 | 可靠执行 | 结构化 Plan；子 Agent 完成保障；重试幂等；Checkpoint |
 | AI Coding | Harness；任务包；验证闭环；长任务恢复 |
+| 编码 Harness 安全 | 三支柱（沙箱×审批×信任）；Seatbelt/Landlock 沙箱；Codex approval_policy vs Claude Code permission mode；两轴正交；Lethal Trifecta；网络默认拒绝；权限即代码；bypass 仅可弃环境；密钥四层防护 |
+| Voice 实时性能 | 五类降延迟手段；预测式 endpointing；prequery 投机预查；模型续写 draft-and-verify（interim→final）；提交/丢弃状态机；只读才预执行；跨轮 KV 复用；barge-in 取消；投机命中率 |
 | Agent Loop | 一轮六阶段；终止双闸；死循环检测；上下文压缩；ReAct vs Plan-Execute；LangGraph vs AgentExecutor |
 | 上下文窗口原理 | 自注意力 O(n²)；KV Cache 显存；RoPE/ALiBi 外推；Lost in the Middle；FlashAttention/GQA/SSM |
 | 局限与兜底 | 幻觉/时效/数学→外接真相源；格式→约束生成；注入→信任边界；七类局限对七种兜底模式 |
 | 推理加速底层 | prefill vs decode；TTFT/TPOT；Roofline；KV Cache；PagedAttention vs FlashAttention；RadixAttention；continuous batching；speculative decoding；量化；P/D 分离 |
 | Agent 推理加速 | 串行 LLM hop；prefill tax；工具并行；模型路由；reasoning budget；prefix/tool/semantic cache；结构化输出；trace 优化闭环 |
 | Agent Runtime | Run；Step；Scheduler；RunState；Context Builder；Tool Gateway；Policy/HITL；Checkpoint；Resume；Handoff；Event Log；Trace；Durable Execution |
+| 平台鉴权体系 | Principal；AuthN/AuthZ；Workload Identity/SPIFFE；委派 OBO；Token Exchange(RFC8693)；Capability Token；Downscoping；Audience Binding；sub/act claim；PEP/PDP/PAP/PIP；RBAC/ABAC/ReBAC；Confused Deputy；Secret Vault；多租户隔离 |
 | Computer Use / Browser Agent | Screenshot；DOM；Accessibility Tree；Locator；Action Schema；Auto-wait；Verifier；Evidence-based Done；WebArena；OSWorld |
 | 结构化输出 | JSON Mode；JSON Schema；Tool Args Schema；Final Output Schema；Constrained Decoding；Validator；Repair Loop；Schema Version |
 | Tool Gateway | Tool Registry；Tool Retrieval；Permission Filter；Policy Engine；Risk Scoring；Idempotency；Sandbox；Audit；Tool Eval |
@@ -155,6 +159,7 @@
 | Buddy 工作台智能体 | WorkBuddy；CodeBuddy；Qoder；Task Contract；Context Manifest；Agent Runtime；Tool Gateway；HITL；Office Agent；Coding Agent；任务成功率 |
 | Model Gateway | Model Registry；Provider Adapter；Routing Policy；Fallback；Budget；Rate Limit；Cache；Prompt/Model Version；Trace；Cost Attribution |
 | Agent 安全生命周期 | Threat Modeling；Prompt Injection；Indirect Injection；Policy Engine；Permission Boundary；Tool/Model Gateway Policy；Sandbox；DLP；Security Eval；Incident Response |
+| Agent Skills 与能力封装 | Skill；Progressive Disclosure；SKILL.md；description 路由信号；L1/L2/L3 三层加载；Skill vs Tool/MCP/Prompt/Subagent；确定性下沉脚本；Composability；Skill 供应链风险 |
 
 ---
 
@@ -195,6 +200,7 @@
 - [ ] Buddy 型工作台智能体（进阶专题）
 - [ ] Model Gateway 与模型治理（进阶专题）
 - [ ] Agent 安全生命周期（进阶专题）
+- [ ] Agent Skills 与能力封装（进阶专题）
 
 ---
 
