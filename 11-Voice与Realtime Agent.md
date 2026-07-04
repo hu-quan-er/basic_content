@@ -133,6 +133,8 @@ TTS:            ████████████   ← TTS 看到 LLM 第一
 - **Sentence-level TTS**：LLM 输出第一个 sentence → TTS 立即合成
 - **Chunked TTS**：TTS 分块输出，边合成边播放
 
+> 本节是流水线并行的入口。预测式执行的完整设计——prequery（投机预查）、模型续写（interim 起草→final 对齐）、预测式 endpointing、跨轮 KV 复用、投机的成本-质量权衡与回退——见 [11.1-Voice实时性能优化与预测式执行.md](./11.1-Voice实时性能优化与预测式执行.md)。
+
 ### 1.7 端到端语音模型（Speech-to-Speech）
 
 #### GPT-4o Realtime API

@@ -213,24 +213,14 @@ decision = policy.evaluate(
 
 ### 6.2 Identity 与 Permission Boundary
 
-不要让 Agent “借用用户完整权限”。推荐分层：
-
-```text
-effective_permission =
-  user_permission
-  ∩ tenant_policy
-  ∩ agent_role
-  ∩ session_scope
-  ∩ tool_required_scope
-  ∩ data_policy
-```
-
-关键机制：
+不要让 Agent “借用用户完整权限”。安全视角的四条底线：
 
 - Agent 有独立身份，不能只是用户 token 的透明代理。
 - 每次工具调用都带 `principal`、`session_id`、`run_id`、`scope`。
 - 高风险 scope 使用短期 capability token。
 - 权限变更需要审计和回放。
+
+> 有效权限的交集模型、认证方式、委派与 On-Behalf-Of 的逐跳换发、Token 架构、凭证隔离和端到端鉴权流程，完整设计见 [20.3-Agent平台鉴权体系设计.md](./20.3-Agent平台鉴权体系设计.md)。本文只从威胁建模视角保留上述底线。
 
 ### 6.3 Trust Boundary 与 Context Manifest
 

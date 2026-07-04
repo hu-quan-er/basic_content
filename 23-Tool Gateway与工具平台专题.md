@@ -193,20 +193,9 @@ semantic validation:
 
 ### 4.4 Permission / Policy
 
-工具权限不是"当前用户有权限就让 Agent 继承全部权限"。
+工具权限不是"当前用户有权限就让 Agent 继承全部权限"。有效权限取交集（`user ∩ agent ∩ session/run scope ∩ tool required scope ∩ policy`），其完整模型、认证、委派换发和凭证注入见 [20.3-Agent平台鉴权体系设计.md](./20.3-Agent平台鉴权体系设计.md)；本文只从工具 PEP 视角讲「在工具调用这一跳判什么」。
 
-推荐取交集：
-
-```text
-effective_permission =
-  user scopes
-  ∩ agent scopes
-  ∩ session scopes
-  ∩ tool required scopes
-  ∩ policy constraints
-```
-
-Policy Engine 应判断：
+Policy Engine（作为工具 PEP）应判断：
 
 | 问题 | 示例 |
 |---|---|

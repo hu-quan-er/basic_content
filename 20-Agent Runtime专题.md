@@ -8,7 +8,7 @@
 
 | 本文负责 | 本文不展开 |
 |---|---|
-| Agent Runtime 的 Run/Step 生命周期、调度、状态、checkpoint、HITL、handoff、event log、trace 和恢复机制 | 最小完整代码实现见 [20.1-Agent Runtime完整实现.md](./20.1-Agent%20Runtime完整实现.md)；主流框架对比见 [20.2-Agent Runtime主流实现对比.md](./20.2-Agent%20Runtime主流实现对比.md)；Model Gateway 见 [26-Model Gateway与模型治理专题.md](./26-Model%20Gateway与模型治理专题.md)；Agent Loop 内部细节见 [16-Agent Loop专题.md](./16-Agent%20Loop专题.md)；可靠执行模式见 [14-Agent工程细节与可靠执行.md](./14-Agent工程细节与可靠执行.md) |
+| Agent Runtime 的 Run/Step 生命周期、调度、状态、checkpoint、HITL、handoff、event log、trace 和恢复机制 | 最小完整代码实现见 [20.1-Agent Runtime完整实现.md](./20.1-Agent%20Runtime完整实现.md)；主流框架对比见 [20.2-Agent Runtime主流实现对比.md](./20.2-Agent%20Runtime主流实现对比.md)；平台鉴权体系（身份/认证/授权/委派/凭证）见 [20.3-Agent平台鉴权体系设计.md](./20.3-Agent平台鉴权体系设计.md)；Model Gateway 见 [26-Model Gateway与模型治理专题.md](./26-Model%20Gateway与模型治理专题.md)；Agent Loop 内部细节见 [16-Agent Loop专题.md](./16-Agent%20Loop专题.md)；可靠执行模式见 [14-Agent工程细节与可靠执行.md](./14-Agent工程细节与可靠执行.md) |
 
 ---
 
@@ -630,6 +630,7 @@ Durable Execution 底座:
 4. 回看 [14-Agent工程细节与可靠执行.md](./14-Agent工程细节与可靠执行.md)，理解可靠执行细节。
 5. 回看 [04.1-生产级Agent记忆工程.md](./04.1-生产级Agent记忆工程.md) 与 [04.2-Agent上下文工程.md](./04.2-Agent上下文工程.md)，理解 runtime 如何管理 memory/context。
 6. 读 [20.2-Agent Runtime主流实现对比.md](./20.2-Agent%20Runtime主流实现对比.md)，理解主流框架分别把 runtime 做到了哪里。
+7. 读 [20.3-Agent平台鉴权体系设计.md](./20.3-Agent平台鉴权体系设计.md)，理解 runtime 作为控制平面如何设计身份、认证、授权、委派和凭证。
 
 ---
 
